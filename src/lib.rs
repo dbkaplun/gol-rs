@@ -1,29 +1,18 @@
-#![allow(dead_code, unused_imports, unused_variables)]
-
 use std::vec::Vec;
-use std::option::Option;
 use std::result::Result;
-use std::fmt::{ Show, Formatter, FormatError };
+use std::iter::Iterator;
+use std::option::Option;
 
-#[deriving(PartialEq, Clone)]
+#[deriving(PartialEq, Clone, Show)]
 pub enum Cell { Live, Dead }
 
 impl Cell {
-    fn is_live(&self) -> bool {
+    pub fn is_live(&self) -> bool {
         match *self { Live => true, _ => false }
     }
 
-    fn is_dead(&self) -> bool {
+    pub fn is_dead(&self) -> bool {
         match *self { Dead => true, _ => false }
-    }
-}
-
-impl Show for Cell {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), FormatError> {
-        match *self {
-            Live => write!(f, "O"),
-            Dead => write!(f, "D")
-        } 
     }
 }
 
@@ -91,18 +80,17 @@ impl World {
 
         for &row_offset in [-1, 0, 1].iter() {
 
-            let row_actual = get_actual_index(self.height, row, row_offset); 
-
             for &cell_offset in [-1, 0, 1].iter() {
 
                 if row_offset == 0 && cell_offset == 0 {
                     continue; //Don't count "current" cell
                 }
 
-                let cell_actual = get_actual_index(self.width, cell, cell_offset);
+                let row = get_actual_index(self.height, row, row_offset);
+                let cell = get_actual_index(self.width, cell, cell_offset);
 
                 let neighbour_is_alive = 
-                    self.state[row_actual * self.height + cell_actual]
+                    self.state[row * self.height + cell]
                         .is_live();
 
                 if neighbour_is_alive {
@@ -113,13 +101,34 @@ impl World {
 
         neighbours
     }
+
+    pub fn iter_rows(&self) -> RowIterator {
+        RowIterator { w: self, row: 0 }
+    }
 }
 
+pub struct RowIterator<'a> {
+    w: &'a World,
+    row: uint
+}
 
+impl <'a> Iterator<&'a [Cell]> for RowIterator<'a> {
+    fn next(&mut self) -> Option<&'a [Cell]> {
+        let row = self.row;
+        if row >= (self.w.height - 1) {
+            return None;
+        }
+        self.row += 1;
+        let start = self.w.height * row;
+        let end = start + self.w.width;
+        Some(self.w.state.slice_or_fail(&start, &end))
+    }
+}
 
+#[cfg(test)]
 mod test {
 
-    use super::{ World, Cell, Live, Dead };
+    use super::{ World, Live, Dead };
 
     #[test]
     fn can_create_world() {
