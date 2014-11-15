@@ -29,11 +29,11 @@ enum CellOffset {
     PlusOne
 }
 
-fn get_actual_index(max: uint, current_index: uint, offset: &CellOffset) -> uint {
+fn get_actual_index(dimension_len: uint, current_index: uint, offset: &CellOffset) -> uint {
     match *offset {
-        MinusOne => if current_index == 0 { max - 1 } else { current_index - 1 },
+        MinusOne => if current_index == 0 { dimension_len - 1 } else { current_index - 1 },
         NoOffset => current_index,
-        PlusOne  => if current_index >= (max - 1) { 0 } else { current_index + 1 }
+        PlusOne  => if current_index >= (dimension_len - 1) { 0 } else { current_index + 1 }
     }
 }
 
@@ -83,11 +83,6 @@ impl World {
 mod test {
 
     use super::{ World, Cell, Live, Dead };
-
-    #[test]
-    fn math_checks_out() {
-        assert_eq!(25i, 5i * 5i);
-    }
 
     #[test]
     fn can_create_world() {
@@ -165,5 +160,26 @@ mod test {
         let neighbours = w.find_neighbours(1, 1);
 
         assert_eq!(neighbours, 0);
+    }
+
+    #[test]
+    fn can_get_actual_index() {
+
+        //Verify that get_actual_index correctly wraps the world
+
+        //Middle of dimension
+        assert_eq!(super::get_actual_index(10, 5, &super::PlusOne),  6);
+        assert_eq!(super::get_actual_index(10, 5, &super::NoOffset), 5);
+        assert_eq!(super::get_actual_index(10, 5, &super::MinusOne), 4);
+
+        //End of dimension
+        assert_eq!(super::get_actual_index(10, 9, &super::PlusOne),  0);
+        assert_eq!(super::get_actual_index(10, 9, &super::NoOffset), 9);
+        assert_eq!(super::get_actual_index(10, 9, &super::MinusOne), 8);
+        
+        //Start of dimension
+        assert_eq!(super::get_actual_index(10, 0, &super::PlusOne),  1);
+        assert_eq!(super::get_actual_index(10, 0, &super::NoOffset), 0);
+        assert_eq!(super::get_actual_index(10, 0, &super::MinusOne), 9);
     }
 }
