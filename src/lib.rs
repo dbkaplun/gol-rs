@@ -3,15 +3,38 @@
 use std::vec::Vec;
 use std::option::Option;
 
-enum Cell {
-    A,
-    D
+#[deriving(PartialEq)]
+enum Cell { Live, Dead }
+
+impl Cell {
+    fn is_live(&self) -> bool {
+        match *self { Live => true, _ => false }
+    }
+
+    fn is_dead(&self) -> bool {
+        match *self { Dead => true, _ => false }
+    }
 }
 
 struct World {
     width: uint,
     height: uint,
     state: Vec<Cell>
+}
+
+#[deriving(PartialEq)]
+enum CellOffset {
+    MinusOne,
+    NoOffset,
+    PlusOne
+}
+
+fn get_actual_index(max: uint, current_index: uint, offset: &CellOffset) -> uint {
+    match *offset {
+        MinusOne => if current_index == 0 { max - 1 } else { current_index - 1 },
+        NoOffset => current_index,
+        PlusOne  => if current_index >= (max - 1) { 0 } else { current_index + 1 }
+    }
 }
 
 impl World {
@@ -21,21 +44,7 @@ impl World {
             None
         }
         else {
-            Some(World { width: width, height: height, state: Vec::new() })
-        }
-    }
-
-    enum Offset {
-        Less,
-        Same,
-        More
-    }
-
-    fn get_actual_index(max: uint, current_index: uint, offset: &Offset) {
-        match *offset {
-            Less => if current_index == 0 { max - 1 } else { current_index - 1 },
-            Same => current_index,
-            More => if current_index >= (max - 1) { 0 } else { current_index + 1 }
+            Some(World { width: width, height: height, state: state })
         }
     }
 
@@ -43,18 +52,21 @@ impl World {
         
         let mut neighbours = 0;
 
-        for row_offset in vec![Less, Same, More].iter() {
+        for row_offset in vec![MinusOne, NoOffset, PlusOne].iter() {
 
             let row_actual = get_actual_index(self.height, row, row_offset); 
 
-            for cell_offset in vec![Less, Same, More].iter() {
+            for cell_offset in vec![MinusOne, NoOffset, PlusOne].iter() {
 
-                let row_actual = get_actual_index(self.width, cell, cell_offset); 
+                if row_offset == &NoOffset && cell_offset == &NoOffset {
+                    continue; //Don't count "current" cell
+                }
 
-                let neighbour_is_alive = match self.state[row_actual * self.height + cell_actual] {
-                    A => true,
-                    D => false
-                };
+                let cell_actual = get_actual_index(self.width, cell, cell_offset);
+
+                let neighbour_is_alive = 
+                    self.state[row_actual * self.height + cell_actual]
+                        .is_live();
 
                 if neighbour_is_alive {
                     neighbours += 1;
@@ -70,7 +82,7 @@ impl World {
 
 mod test {
 
-    use super::{ World, Cell, A, D };
+    use super::{ World, Cell, Live, Dead };
 
     #[test]
     fn math_checks_out() {
@@ -80,17 +92,18 @@ mod test {
     #[test]
     fn can_create_world() {
         
-        let state = Vec::from_fn(100, |_| D);
+        let state = Vec::from_fn(100, |_| Dead);
 
         let w = World::try_create(10, 10, state);
 
         assert!(w.is_some());
+        //TODO assert state value was passed in
     }
 
     #[test]
     fn can_fail_to_create_world() {
         
-        let state = Vec::from_fn(99, |_| D);
+        let state = Vec::from_fn(99, |_| Dead);
 
         let w = World::try_create(10, 10, state);
 
@@ -99,11 +112,29 @@ mod test {
 
     fn make_square_board() -> World {
         let state = vec![
-            A, A, A,
-            A, D, A,
-            A, A, A,
+            Live, Live, Live,
+            Live, Dead,  Live,
+            Live, Live, Live,
         ];
-        World::try_create(3, 3, state).expect("Invalid world")
+        World::try_create(3, 3, state).unwrap()
+    }
+
+    fn make_pipe_board() -> World {
+        let state = vec![
+            Dead, Dead, Live,
+            Dead, Dead, Live,
+            Dead, Dead, Live,
+        ];
+        World::try_create(3, 3, state).unwrap()
+    }
+
+    fn make_lonely_board() -> World {
+        let state = vec![
+            Dead, Dead, Dead,
+            Dead, Live, Dead,
+            Dead, Dead, Dead,
+        ];
+        World::try_create(3, 3, state).unwrap()
     }
 
     #[test]
@@ -114,5 +145,25 @@ mod test {
         let neighbours = w.find_neighbours(1, 1);
 
         assert_eq!(neighbours, 8);
+    }
+
+    #[test]
+    fn can_count_neighbours_on_pipe_board() {
+
+        let w = make_pipe_board();
+
+        let neighbours = w.find_neighbours(1, 1);
+
+        assert_eq!(neighbours, 3);
+    }
+
+    #[test]
+    fn can_count_neighbours_on_lonely_board() {
+
+        let w = make_lonely_board();
+
+        let neighbours = w.find_neighbours(1, 1);
+
+        assert_eq!(neighbours, 0);
     }
 }
