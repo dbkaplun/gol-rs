@@ -60,7 +60,7 @@ impl World {
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
         
         let mut neighbours = 0;
-        
+
         for &row_offset in [-1, 0, 1].iter() {
 
             let row_actual = get_actual_index(self.height, row, row_offset); 
@@ -99,7 +99,6 @@ mod test {
         let state = Vec::from_fn(100, |_| Dead);
 
         let w = World::try_create(10, 10, state.clone());
-
         assert!(w.is_ok());
 
         let w = w.unwrap();
@@ -202,5 +201,11 @@ mod test {
         assert_eq!(super::get_actual_index(10, 0,  1), 1);
         assert_eq!(super::get_actual_index(10, 0,  0), 0);
         assert_eq!(super::get_actual_index(10, 0, -1), 9);
+    }
+
+    #[test]
+    #[should_fail]
+    fn can_panic_with_invalid_offset() {
+        super::get_actual_index(10, 0,  2);
     }
 }
