@@ -57,9 +57,9 @@ impl World {
         Ok(World { width: width, height: height, state: state })
     }
 
-    fn step(&mut self) {
-        // Generate the next world state from the previous
-        let next_state = Vec::from_fn(self.width * self.height, |index| {
+    fn get_next_state(&self) -> Vec<Cell> {
+        // Generate the next world state from the current
+        Vec::from_fn(self.width * self.height, |index| {
             let row = index / self.height;
             let cell = index % self.height;
 
@@ -73,8 +73,16 @@ impl World {
                 (Live, _) |
                 (Dead, _) => Dead
             }
-        });
-        self.state = next_state;
+        })
+    }
+
+    pub fn step_mut(&mut self) {
+        self.state = self.get_next_state();
+    }
+
+    pub fn step(&self) -> World {
+        let next_state = self.get_next_state();
+        World { height: self.height, width: self.width, state: next_state }
     }
 
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
@@ -231,10 +239,10 @@ mod test {
     }
 
     #[test]
-    fn can_step_pipe_world() {
+    fn can_step_pipe_world_mutably() {
         let mut w = make_pipe_board();
 
-        w.step();
+        w.step_mut();
 
         let expected = [
             Dead, Dead, Dead, Dead,
@@ -244,5 +252,21 @@ mod test {
         ];
 
         assert_eq!(expected.as_slice(), w.state.as_slice());
+    }
+
+    #[test]
+    fn can_step_pipe_world_immutably() {
+        let w = make_pipe_board();
+
+        let w2 = w.step();
+
+        let expected = [
+            Dead, Dead, Dead, Dead,
+            Live, Dead, Live, Live,
+            Dead, Dead, Dead, Dead,
+            Dead, Dead, Dead, Dead,
+        ];
+
+        assert_eq!(expected.as_slice(), w2.state.as_slice());
     }
 }
