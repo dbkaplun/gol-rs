@@ -153,6 +153,16 @@ mod test {
     }
 
     #[test]
+    fn can_count_neighbours_on_edge_of_pipe_board() {
+
+        let w = make_pipe_board();
+
+        let neighbours = w.find_neighbours(1, 0);
+
+        assert_eq!(neighbours, 3);
+    }
+
+    #[test]
     fn can_count_neighbours_on_lonely_board() {
 
         let w = make_lonely_board();
