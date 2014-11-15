@@ -2,8 +2,10 @@
 
 use std::vec::Vec;
 use std::option::Option;
+use std::result::Result;
+use std::fmt::{ Show, Formatter, FormatError };
 
-#[deriving(PartialEq)]
+#[deriving(PartialEq, Clone)]
 enum Cell { Live, Dead }
 
 impl Cell {
@@ -16,10 +18,19 @@ impl Cell {
     }
 }
 
+impl Show for Cell {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), FormatError> {
+        match *self {
+            Live => write!(f, "O"),
+            Dead => write!(f, "D")
+        } 
+    }
+}
+
 struct World {
     width: uint,
     height: uint,
-    state: Vec<Cell>
+    state: Box<Vec<Cell>>
 }
 
 #[deriving(PartialEq)]
@@ -39,7 +50,7 @@ fn get_actual_index(dimension_len: uint, current_index: uint, offset: &CellOffse
 
 impl World {
 
-    fn try_create(width: uint, height: uint, state: Vec<Cell>) -> Option<World> {
+    fn try_create(width: uint, height: uint, state: Box<Vec<Cell>>) -> Option<World> {
         if width * height != state.len() {
             None
         }
@@ -89,10 +100,12 @@ mod test {
         
         let state = Vec::from_fn(100, |_| Dead);
 
-        let w = World::try_create(10, 10, state);
+        let w = World::try_create(10, 10, box state.clone());
 
         assert!(w.is_some());
-        //TODO assert state value was passed in
+
+        let w = w.unwrap();
+        assert_eq!(state.as_slice(), w.state.as_slice());
     }
 
     #[test]
@@ -100,7 +113,7 @@ mod test {
         
         let state = Vec::from_fn(99, |_| Dead);
 
-        let w = World::try_create(10, 10, state);
+        let w = World::try_create(10, 10, box state);
 
         assert!(w.is_none());
     }
@@ -111,7 +124,7 @@ mod test {
             Live, Dead,  Live,
             Live, Live, Live,
         ];
-        World::try_create(3, 3, state).unwrap()
+        World::try_create(3, 3, box state).unwrap()
     }
 
     fn make_pipe_board() -> World {
@@ -120,7 +133,7 @@ mod test {
             Dead, Dead, Live,
             Dead, Dead, Live,
         ];
-        World::try_create(3, 3, state).unwrap()
+        World::try_create(3, 3, box state).unwrap()
     }
 
     fn make_lonely_board() -> World {
@@ -129,7 +142,7 @@ mod test {
             Dead, Live, Dead,
             Dead, Dead, Dead,
         ];
-        World::try_create(3, 3, state).unwrap()
+        World::try_create(3, 3, box state).unwrap()
     }
 
     #[test]
