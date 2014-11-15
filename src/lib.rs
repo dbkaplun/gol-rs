@@ -48,15 +48,19 @@ fn get_actual_index(dimension_len: uint, current_index: uint, offset: &CellOffse
     }
 }
 
+#[deriving(Show)]
+enum GolError {
+    InvalidState(&'static str)
+}
+
 impl World {
 
-    fn try_create(width: uint, height: uint, state: Box<Vec<Cell>>) -> Option<World> {
+    fn try_create(width: uint, height: uint, state: Box<Vec<Cell>>) -> Result<World, GolError> {
         if width * height != state.len() {
-            None
+            return Err(InvalidState("State does not match height and length dimensions"));
         }
-        else {
-            Some(World { width: width, height: height, state: state })
-        }
+
+        Ok(World { width: width, height: height, state: state })
     }
 
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
@@ -102,7 +106,7 @@ mod test {
 
         let w = World::try_create(10, 10, box state.clone());
 
-        assert!(w.is_some());
+        assert!(w.is_ok());
 
         let w = w.unwrap();
         assert_eq!(state.as_slice(), w.state.as_slice());
@@ -115,7 +119,7 @@ mod test {
 
         let w = World::try_create(10, 10, box state);
 
-        assert!(w.is_none());
+        assert!(w.is_err());
     }
 
     fn make_square_board() -> World {
