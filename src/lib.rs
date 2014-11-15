@@ -57,6 +57,26 @@ impl World {
         Ok(World { width: width, height: height, state: state })
     }
 
+    fn step(&mut self) {
+        // Generate the next world state from the previous
+        let next_state = Vec::from_fn(self.width * self.height, |index| {
+            let row = index / self.height;
+            let cell = index % self.height;
+
+            let curr = self.state[index];  
+            let curr_neighbours = self.find_neighbours(row, cell);
+
+            match (curr, curr_neighbours) {
+                (Live, 3) |
+                (Live, 2) |
+                (Dead, 3) => Live,
+                (Live, _) |
+                (Dead, _) => Dead
+            }
+        });
+        self.state = next_state;
+    }
+
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
         
         let mut neighbours = 0;
@@ -126,11 +146,12 @@ mod test {
 
     fn make_pipe_board() -> World {
         let state = vec![
-            Dead, Dead, Live,
-            Dead, Dead, Live,
-            Dead, Dead, Live,
+            Dead, Dead, Dead, Live,
+            Dead, Dead, Dead, Live,
+            Dead, Dead, Dead, Live,
+            Dead, Dead, Dead, Dead,
         ];
-        World::try_create(3, 3, state).unwrap()
+        World::try_create(4, 4, state).unwrap()
     }
 
     fn make_lonely_board() -> World {
@@ -157,7 +178,7 @@ mod test {
 
         let w = make_pipe_board();
 
-        let neighbours = w.find_neighbours(1, 1);
+        let neighbours = w.find_neighbours(1, 2);
 
         assert_eq!(neighbours, 3);
     }
@@ -207,5 +228,21 @@ mod test {
     #[should_fail]
     fn can_panic_with_invalid_offset() {
         super::get_actual_index(10, 0,  2);
+    }
+
+    #[test]
+    fn can_step_pipe_world() {
+        let mut w = make_pipe_board();
+
+        w.step();
+
+        let expected = [
+            Dead, Dead, Dead, Dead,
+            Live, Dead, Live, Live,
+            Dead, Dead, Dead, Dead,
+            Dead, Dead, Dead, Dead,
+        ];
+
+        assert_eq!(expected.as_slice(), w.state.as_slice());
     }
 }
