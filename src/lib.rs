@@ -33,23 +33,17 @@ pub struct World {
     state: Vec<Cell>
 }
 
-#[deriving(PartialEq)]
-enum CellOffset {
-    MinusOne,
-    NoOffset,
-    PlusOne
-}
-
 #[deriving(Show)]
 pub enum GolError {
     InvalidState(&'static str)
 }
 
-fn get_actual_index(dimension_len: uint, current_index: uint, offset: &CellOffset) -> uint {
-    match *offset {
-        MinusOne => if current_index == 0 { dimension_len - 1 } else { current_index - 1 },
-        NoOffset => current_index,
-        PlusOne  => if current_index >= (dimension_len - 1) { 0 } else { current_index + 1 }
+fn get_actual_index(dimension_len: uint, current_index: uint, offset: int) -> uint {
+    match offset {
+        -1 => if current_index == 0 { dimension_len - 1 } else { current_index - 1 },
+         0 => current_index,
+         1 => if current_index >= (dimension_len - 1) { 0 } else { current_index + 1 },
+         _ => panic!("invalid offset")
     }
 }
 
@@ -66,14 +60,14 @@ impl World {
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
         
         let mut neighbours = 0;
-
-        for row_offset in vec![MinusOne, NoOffset, PlusOne].iter() {
+        
+        for &row_offset in [-1, 0, 1].iter() {
 
             let row_actual = get_actual_index(self.height, row, row_offset); 
 
-            for cell_offset in vec![MinusOne, NoOffset, PlusOne].iter() {
+            for &cell_offset in [-1, 0, 1].iter() {
 
-                if row_offset == &NoOffset && cell_offset == &NoOffset {
+                if row_offset == 0 && cell_offset == 0 {
                     continue; //Don't count "current" cell
                 }
 
@@ -195,18 +189,18 @@ mod test {
         //Verify that get_actual_index correctly wraps the world
 
         //Middle of dimension
-        assert_eq!(super::get_actual_index(10, 5, &super::PlusOne),  6);
-        assert_eq!(super::get_actual_index(10, 5, &super::NoOffset), 5);
-        assert_eq!(super::get_actual_index(10, 5, &super::MinusOne), 4);
+        assert_eq!(super::get_actual_index(10, 5,  1), 6);
+        assert_eq!(super::get_actual_index(10, 5,  0), 5);
+        assert_eq!(super::get_actual_index(10, 5, -1), 4);
 
         //End of dimension
-        assert_eq!(super::get_actual_index(10, 9, &super::PlusOne),  0);
-        assert_eq!(super::get_actual_index(10, 9, &super::NoOffset), 9);
-        assert_eq!(super::get_actual_index(10, 9, &super::MinusOne), 8);
+        assert_eq!(super::get_actual_index(10, 9,  1), 0);
+        assert_eq!(super::get_actual_index(10, 9,  0), 9);
+        assert_eq!(super::get_actual_index(10, 9, -1), 8);
         
         //Start of dimension
-        assert_eq!(super::get_actual_index(10, 0, &super::PlusOne),  1);
-        assert_eq!(super::get_actual_index(10, 0, &super::NoOffset), 0);
-        assert_eq!(super::get_actual_index(10, 0, &super::MinusOne), 9);
+        assert_eq!(super::get_actual_index(10, 0,  1), 1);
+        assert_eq!(super::get_actual_index(10, 0,  0), 0);
+        assert_eq!(super::get_actual_index(10, 0, -1), 9);
     }
 }
