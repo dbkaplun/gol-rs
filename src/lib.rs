@@ -6,7 +6,7 @@ use std::result::Result;
 use std::fmt::{ Show, Formatter, FormatError };
 
 #[deriving(PartialEq, Clone)]
-enum Cell { Live, Dead }
+pub enum Cell { Live, Dead }
 
 impl Cell {
     fn is_live(&self) -> bool {
@@ -27,10 +27,10 @@ impl Show for Cell {
     }
 }
 
-struct World {
+pub struct World {
     width: uint,
     height: uint,
-    state: Box<Vec<Cell>>
+    state: Vec<Cell>
 }
 
 #[deriving(PartialEq)]
@@ -38,6 +38,11 @@ enum CellOffset {
     MinusOne,
     NoOffset,
     PlusOne
+}
+
+#[deriving(Show)]
+pub enum GolError {
+    InvalidState(&'static str)
 }
 
 fn get_actual_index(dimension_len: uint, current_index: uint, offset: &CellOffset) -> uint {
@@ -48,14 +53,9 @@ fn get_actual_index(dimension_len: uint, current_index: uint, offset: &CellOffse
     }
 }
 
-#[deriving(Show)]
-enum GolError {
-    InvalidState(&'static str)
-}
-
 impl World {
 
-    fn try_create(width: uint, height: uint, state: Box<Vec<Cell>>) -> Result<World, GolError> {
+    pub fn try_create(width: uint, height: uint, state: Vec<Cell>) -> Result<World, GolError> {
         if width * height != state.len() {
             return Err(InvalidState("State does not match height and length dimensions"));
         }
@@ -104,7 +104,7 @@ mod test {
         
         let state = Vec::from_fn(100, |_| Dead);
 
-        let w = World::try_create(10, 10, box state.clone());
+        let w = World::try_create(10, 10, state.clone());
 
         assert!(w.is_ok());
 
@@ -117,7 +117,7 @@ mod test {
         
         let state = Vec::from_fn(99, |_| Dead);
 
-        let w = World::try_create(10, 10, box state);
+        let w = World::try_create(10, 10, state);
 
         assert!(w.is_err());
     }
@@ -128,7 +128,7 @@ mod test {
             Live, Dead,  Live,
             Live, Live, Live,
         ];
-        World::try_create(3, 3, box state).unwrap()
+        World::try_create(3, 3, state).unwrap()
     }
 
     fn make_pipe_board() -> World {
@@ -137,7 +137,7 @@ mod test {
             Dead, Dead, Live,
             Dead, Dead, Live,
         ];
-        World::try_create(3, 3, box state).unwrap()
+        World::try_create(3, 3, state).unwrap()
     }
 
     fn make_lonely_board() -> World {
@@ -146,7 +146,7 @@ mod test {
             Dead, Live, Dead,
             Dead, Dead, Dead,
         ];
-        World::try_create(3, 3, box state).unwrap()
+        World::try_create(3, 3, state).unwrap()
     }
 
     #[test]
