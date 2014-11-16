@@ -123,11 +123,12 @@ pub struct RowIterator<'a> {
 impl <'a> Iterator<&'a [Cell]> for RowIterator<'a> {
     fn next(&mut self) -> Option<&'a [Cell]> {
         let row = self.row;
-        if row >= (self.w.height - 1) {
+        if row == self.w.height {
             return None;
         }
+        //increment iterator
         self.row += 1;
-        let start = self.w.height * row;
+        let start = self.w.width * row;
         let end = start + self.w.width;
         Some(self.w.state.slice_or_fail(&start, &end))
     }
@@ -322,5 +323,17 @@ mod test {
         ];
 
         assert_eq!(expected.as_slice(), w2.state.as_slice());
+    }
+
+    #[test]
+    fn can_iterate_rows_in_oblong_world_correctly() {
+        let w = make_oblong_world();
+
+        let mut iter = w.iter_rows();
+
+        assert_eq!(iter.next().unwrap(), [Dead, Dead, Live, Dead, Dead].as_slice());
+        assert_eq!(iter.next().unwrap(), [Dead, Live, Dead, Live, Dead].as_slice());
+        assert_eq!(iter.next().unwrap(), [Dead, Dead, Live, Dead, Dead].as_slice());
+        assert!(iter.next().is_none());
     }
 }
