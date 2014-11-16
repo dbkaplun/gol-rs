@@ -38,9 +38,17 @@ fn get_actual_index(dimension_len: uint, current_index: uint, offset: int) -> ui
 
 impl World {
 
+    pub fn width(&self) -> uint {
+        self.width
+    }
+
+    pub fn height(&self) -> uint {
+        self.height
+    }
+
     pub fn try_create(width: uint, height: uint, state: Vec<Cell>) -> Result<World, GolError> {
         if width * height != state.len() {
-            return Err(InvalidState("State does not match height and length dimensions"));
+            return Err(InvalidState("State does not fit height and width requirements"));
         }
 
         Ok(World { width: width, height: height, state: state })
@@ -49,8 +57,8 @@ impl World {
     fn get_next_state(&self) -> Vec<Cell> {
         // Generate the next world state from the current
         Vec::from_fn(self.width * self.height, |index| {
-            let row = index / self.height;
-            let cell = index % self.height;
+            let row = index / self.width;
+            let cell = index % self.width;
 
             let curr = self.state[index];  
             let curr_neighbours = self.find_neighbours(row, cell);
@@ -75,7 +83,7 @@ impl World {
     }
 
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
-        
+    
         let mut neighbours = 0;
 
         for &row_offset in [-1, 0, 1].iter() {
@@ -90,7 +98,7 @@ impl World {
                 let cell = get_actual_index(self.width, cell, cell_offset);
 
                 let neighbour_is_alive = 
-                    self.state[row * self.height + cell]
+                    self.state[row * self.width + cell]
                         .is_live();
 
                 if neighbour_is_alive {
@@ -152,7 +160,7 @@ mod test {
         assert!(w.is_err());
     }
 
-    fn make_square_board() -> World {
+    fn make_square_world() -> World {
         let state = vec![
             Live, Live, Live,
             Live, Dead,  Live,
@@ -161,7 +169,7 @@ mod test {
         World::try_create(3, 3, state).unwrap()
     }
 
-    fn make_pipe_board() -> World {
+    fn make_pipe_world() -> World {
         let state = vec![
             Dead, Dead, Dead, Live,
             Dead, Dead, Dead, Live,
@@ -171,7 +179,7 @@ mod test {
         World::try_create(4, 4, state).unwrap()
     }
 
-    fn make_lonely_board() -> World {
+    fn make_lonely_world() -> World {
         let state = vec![
             Dead, Dead, Dead,
             Dead, Live, Dead,
@@ -180,10 +188,20 @@ mod test {
         World::try_create(3, 3, state).unwrap()
     }
 
-    #[test]
-    fn can_count_neighbours_on_square_board() {
+    fn make_oblong_world() -> World {
+        let state = vec![
+        /*      0     1     2     3     4  */
+        /* 0 */ Dead, Dead, Live, Dead, Dead,
+        /* 1 */ Dead, Live, Dead, Live, Dead,
+        /* 2 */ Dead, Dead, Live, Dead, Dead,
+        ];
+        World::try_create(5, 3, state).unwrap()
+    }
 
-        let w = make_square_board();
+    #[test]
+    fn can_count_neighbours_on_square_world() {
+
+        let w = make_square_world();
 
         let neighbours = w.find_neighbours(1, 1);
 
@@ -191,9 +209,9 @@ mod test {
     }
 
     #[test]
-    fn can_count_neighbours_on_pipe_board() {
+    fn can_count_neighbours_on_pipe_world() {
 
-        let w = make_pipe_board();
+        let w = make_pipe_world();
 
         let neighbours = w.find_neighbours(1, 2);
 
@@ -201,9 +219,9 @@ mod test {
     }
 
     #[test]
-    fn can_count_neighbours_on_edge_of_pipe_board() {
+    fn can_count_neighbours_on_edge_of_pipe_world() {
 
-        let w = make_pipe_board();
+        let w = make_pipe_world();
 
         let neighbours = w.find_neighbours(1, 0);
 
@@ -211,13 +229,40 @@ mod test {
     }
 
     #[test]
-    fn can_count_neighbours_on_lonely_board() {
+    fn can_count_neighbours_on_lonely_world() {
 
-        let w = make_lonely_board();
+        let w = make_lonely_world();
 
         let neighbours = w.find_neighbours(1, 1);
 
         assert_eq!(neighbours, 0);
+    }
+
+    #[test]
+    fn can_count_neighbours_on_oblong_world() {
+        let w = make_oblong_world();
+
+        let neighbours = w.find_neighbours(1, 2);
+
+        assert_eq!(neighbours, 4);
+    }
+
+    #[test]
+    fn can_count_neighbours_at_bottom_right_of_oblong_world() {
+        let w = make_oblong_world();
+
+        let neighbours = w.find_neighbours(2, 4);
+
+        assert_eq!(neighbours, 1);
+    }
+
+    #[test]
+    fn can_count_neighbours_at_top_left_of_oblong_world() {
+        let w = make_oblong_world();
+
+        let neighbours = w.find_neighbours(0, 0);
+
+        assert_eq!(neighbours, 1);
     }
 
     #[test]
@@ -249,7 +294,7 @@ mod test {
 
     #[test]
     fn can_step_pipe_world_mutably() {
-        let mut w = make_pipe_board();
+        let mut w = make_pipe_world();
 
         w.step_mut();
 
@@ -265,7 +310,7 @@ mod test {
 
     #[test]
     fn can_step_pipe_world_immutably() {
-        let w = make_pipe_board();
+        let w = make_pipe_world();
 
         let w2 = w.step();
 
