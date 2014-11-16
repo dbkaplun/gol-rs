@@ -137,7 +137,7 @@ impl <'a> Iterator<&'a [Cell]> for RowIterator<'a> {
 #[cfg(test)]
 mod test {
 
-    use super::{ World, Live, Dead };
+    use super::{ World, Dead };
 
     #[test]
     fn can_create_world() {
@@ -162,41 +162,67 @@ mod test {
     }
 
     fn make_square_world() -> World {
+        use super::Dead as X;
+        use super::Live as O;
+
         let state = vec![
-            Live, Live, Live,
-            Live, Dead,  Live,
-            Live, Live, Live,
+            O, O, O,
+            O, X, O,
+            O, O, O,
         ];
         World::try_create(3, 3, state).unwrap()
     }
 
     fn make_pipe_world() -> World {
+        use super::Dead as X;
+        use super::Live as O;
+
         let state = vec![
-            Dead, Dead, Dead, Live,
-            Dead, Dead, Dead, Live,
-            Dead, Dead, Dead, Live,
-            Dead, Dead, Dead, Dead,
+            X, X, X, O,
+            X, X, X, O,
+            X, X, X, O,
+            X, X, X, X,
         ];
         World::try_create(4, 4, state).unwrap()
     }
 
     fn make_lonely_world() -> World {
+        use super::Dead as X;
+        use super::Live as O;
+
         let state = vec![
-            Dead, Dead, Dead,
-            Dead, Live, Dead,
-            Dead, Dead, Dead,
+            X, X, X,
+            X, O, X,
+            X, X, X,
         ];
         World::try_create(3, 3, state).unwrap()
     }
 
     fn make_oblong_world() -> World {
+        use super::Dead as X;
+        use super::Live as O;
+
         let state = vec![
         /*      0     1     2     3     4  */
-        /* 0 */ Dead, Dead, Live, Dead, Dead,
-        /* 1 */ Dead, Live, Dead, Live, Dead,
-        /* 2 */ Dead, Dead, Live, Dead, Dead,
+        /* 0 */ X, X, O, X, X,
+        /* 1 */ X, O, X, O, X,
+        /* 2 */ X, X, O, X, X,
         ];
         World::try_create(5, 3, state).unwrap()
+    }
+
+    fn make_glider_world() -> World {
+        use super::Dead as X;
+        use super::Live as O;
+
+        let state = vec![
+            X, X, X, X, X, X,
+            X, X, X, O, X, X,
+            X, O, X, O, X, X,
+            X, X, O, O, X, X,
+            X, X, X, X, X, X,
+        ];
+        World::try_create(6, 5, state).unwrap()
     }
 
     #[test]
@@ -295,15 +321,18 @@ mod test {
 
     #[test]
     fn can_step_pipe_world_mutably() {
+        use super::Dead as X;
+        use super::Live as O;
+
         let mut w = make_pipe_world();
 
         w.step_mut();
 
         let expected = [
-            Dead, Dead, Dead, Dead,
-            Live, Dead, Live, Live,
-            Dead, Dead, Dead, Dead,
-            Dead, Dead, Dead, Dead,
+            X, X, X, X,
+            O, X, O, O,
+            X, X, X, X,
+            X, X, X, X,
         ];
 
         assert_eq!(expected.as_slice(), w.state.as_slice());
@@ -311,29 +340,77 @@ mod test {
 
     #[test]
     fn can_step_pipe_world_immutably() {
+        use super::Dead as X;
+        use super::Live as O;
+
         let w = make_pipe_world();
 
         let w2 = w.step();
 
         let expected = [
-            Dead, Dead, Dead, Dead,
-            Live, Dead, Live, Live,
-            Dead, Dead, Dead, Dead,
-            Dead, Dead, Dead, Dead,
+            X, X, X, X,
+            O, X, O, O,
+            X, X, X, X,
+            X, X, X, X,
         ];
 
         assert_eq!(expected.as_slice(), w2.state.as_slice());
     }
 
     #[test]
+    fn can_step_glider_world() {
+        use super::Dead as X;
+        use super::Live as O;
+
+        //Step the glider twice, and assert we got the correct output
+        let mut w = make_glider_world();
+
+        w.step_mut();
+        w.step_mut();
+
+        let expected = [
+            X, X, X, X, X, X,
+            X, X, X, O, X, X,
+            X, X, X, X, O, X,
+            X, X, O, O, O, X,
+            X, X, X, X, X, X,
+        ];
+
+        assert_eq!(w.state.as_slice(), expected.as_slice());
+    }
+
+    #[test]
+    fn can_step_lonely_world() {
+        use super::Dead as X;
+
+        //Step the lonely twice, and assert that every 
+        //cell died and that none came back to life
+        let mut w = make_lonely_world();
+
+        w.step_mut();
+        w.step_mut();
+
+        let expected = [
+            X, X, X,
+            X, X, X,
+            X, X, X,
+        ];
+
+        assert_eq!(w.state.as_slice(), expected.as_slice());
+    }
+
+    #[test]
     fn can_iterate_rows_in_oblong_world_correctly() {
+        use super::Dead as X;
+        use super::Live as O;
+
         let w = make_oblong_world();
 
         let mut iter = w.iter_rows();
 
-        assert_eq!(iter.next().unwrap(), [Dead, Dead, Live, Dead, Dead].as_slice());
-        assert_eq!(iter.next().unwrap(), [Dead, Live, Dead, Live, Dead].as_slice());
-        assert_eq!(iter.next().unwrap(), [Dead, Dead, Live, Dead, Dead].as_slice());
+        assert_eq!(iter.next().unwrap(), [X, X, O, X, X].as_slice());
+        assert_eq!(iter.next().unwrap(), [X, O, X, O, X].as_slice());
+        assert_eq!(iter.next().unwrap(), [X, X, O, X, X].as_slice());
         assert!(iter.next().is_none());
     }
 }
