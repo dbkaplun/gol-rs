@@ -1,10 +1,10 @@
+#![allow(unused_imports)]
 
 extern crate gol;
 
 use std::rand;
 use std::os;
 use std::io::timer;
-use std::io::stdio;
 use std::time::Duration;
 use gol::{ World, Live, Dead };
 
@@ -12,7 +12,7 @@ use gol::{ World, Live, Dead };
 fn main() {
 
     let w = 50u;
-    let h = 50u;
+    let h = 30u;
     let state = Vec::from_fn(w * h, |_| {
         match rand::random::<bool>() { true => Live, false => Dead }
     });
@@ -26,19 +26,24 @@ fn main() {
         }
     };
 
+    // A single frame of output
+    let mut frame = String::with_capacity((w.width() + 1) * w.height());
+
     loop {
         //Print world
         for row in w.iter_rows() {
             for cell in row.iter() {
                 match *cell {
-                    Live => stdio::print("O"),
-                    Dead => stdio::print(" ")
+                    Live => frame.push('O'),
+                    Dead => frame.push(' ')
                 };
             }
-            stdio::print("\n");
+            frame.push('\n');
         }
-        stdio::println("---------");
-        stdio::flush();
+
+        println!("{}Generation: {}", &frame, &w.generation());
+
+        frame.clear();
 
         //Step world
         w.step_mut();

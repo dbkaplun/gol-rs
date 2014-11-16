@@ -19,6 +19,7 @@ impl Cell {
 pub struct World {
     width: uint,
     height: uint,
+    gen: uint,
     state: Vec<Cell>
 }
 
@@ -38,6 +39,10 @@ fn get_actual_index(dimension_len: uint, current_index: uint, offset: int) -> ui
 
 impl World {
 
+    pub fn generation(&self) -> uint {
+        self.gen
+    }
+
     pub fn width(&self) -> uint {
         self.width
     }
@@ -51,7 +56,7 @@ impl World {
             return Err(InvalidState("State does not fit height and width requirements"));
         }
 
-        Ok(World { width: width, height: height, state: state })
+        Ok(World { width: width, height: height, gen: 0, state: state })
     }
 
     fn get_next_state(&self) -> Vec<Cell> {
@@ -75,11 +80,12 @@ impl World {
 
     pub fn step_mut(&mut self) {
         self.state = self.get_next_state();
+        self.gen += 1;
     }
 
     pub fn step(&self) -> World {
         let next_state = self.get_next_state();
-        World { height: self.height, width: self.width, state: next_state }
+        World { height: self.height, width: self.width, gen: self.gen + 1, state: next_state }
     }
 
     fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
@@ -355,6 +361,23 @@ mod test {
         ];
 
         assert_eq!(expected.as_slice(), w2.state.as_slice());
+    }
+
+
+    #[test]
+    fn can_increment_generation() {
+        //initial generation
+        let w = make_square_world();
+        assert_eq!(w.generation(), 0);
+        
+        //immutable step
+        let w_two = w.step();
+        assert_eq!(w_two.generation(), 1);
+
+        //mutable step
+        let mut w_mut = w;
+        w_mut.step_mut();
+        assert_eq!(w_mut.generation(), 1);
     }
 
     #[test]
