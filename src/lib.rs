@@ -8,11 +8,11 @@ pub enum Cell { Live, Dead }
 
 impl Cell {
     pub fn is_live(&self) -> bool {
-        match *self { Live => true, _ => false }
+        match *self { Cell::Live => true, _ => false }
     }
 
     pub fn is_dead(&self) -> bool {
-        match *self { Dead => true, _ => false }
+        match *self { Cell::Dead => true, _ => false }
     }
 }
 
@@ -53,7 +53,7 @@ impl World {
 
     pub fn try_create(width: uint, height: uint, state: Vec<Cell>) -> Result<World, GolError> {
         if width * height != state.len() {
-            return Err(InvalidState("State does not fit height and width requirements"));
+            return Err(GolError::InvalidState("State does not fit height and width requirements"));
         }
 
         Ok(World { width: width, height: height, gen: 0, state: state })
@@ -69,11 +69,11 @@ impl World {
             let curr_neighbours = self.find_neighbours(row, cell);
 
             match (curr, curr_neighbours) {
-                (Live, 3) |
-                (Live, 2) |
-                (Dead, 3) => Live,
-                (Live, _) |
-                (Dead, _) => Dead
+                (Cell::Live, 3) |
+                (Cell::Live, 2) |
+                (Cell::Dead, 3) => Cell::Live,
+                (Cell::Live, _) |
+                (Cell::Dead, _) => Cell::Dead
             }
         })
     }
