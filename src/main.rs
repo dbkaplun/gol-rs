@@ -6,18 +6,19 @@ use std::rand;
 use std::os;
 use std::io::timer;
 use std::time::Duration;
-use gol::{ World, Live, Dead };
+use gol::{ World, Cell };
+use gol::Cell::Live as O;
+use gol::Cell::Dead as X;
 
 #[cfg(not(test))]
 fn main() {
 
-    let w = 50u;
-    let h = 30u;
-    let state = Vec::from_fn(w * h, |_| {
-        match rand::random::<bool>() { true => Live, false => Dead }
+    let (rows, cells) = (20, 50);
+    let state = Vec::from_fn(rows * cells, |_| {
+        match rand::random::<bool>() { true => O, false => X }
     });
 
-    let mut w = match World::try_create(w, h, state) {
+    let mut w = match World::try_create(rows, cells, state) {
         Ok(w) => w,
         Err(err) => { 
             println!("Error creating world: {}", err);
@@ -27,15 +28,15 @@ fn main() {
     };
 
     // A single frame of output
-    let mut frame = String::with_capacity((w.width() + 1) * w.height());
+    let mut frame = String::with_capacity((w.cells() + 1) * w.rows());
 
     loop {
         //Print world
         for row in w.iter_rows() {
             for cell in row.iter() {
                 match *cell {
-                    Live => frame.push('O'),
-                    Dead => frame.push(' ')
+                    O => frame.push('@'),
+                    X => frame.push(' ')
                 };
             }
             frame.push('\n');
@@ -49,6 +50,6 @@ fn main() {
         w.step_mut();
 
         //Sleep for a moment
-        timer::sleep(Duration::milliseconds(200));
+        timer::sleep(Duration::milliseconds(30));
     }
 }
