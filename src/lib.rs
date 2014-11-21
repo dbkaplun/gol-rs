@@ -151,8 +151,6 @@ impl World {
 
                 self.state[row * self.cells + cell] = c;
             }
-
-            println!("")
         }
 
     }
