@@ -1,9 +1,11 @@
+#![allow(missing_copy_implementations)]
+
 use std::vec::Vec;
 use std::result::Result;
 use std::iter::Iterator;
 use std::option::Option;
 
-#[deriving(PartialEq, Clone, Show)]
+#[derive(PartialEq, Clone, Show)]
 pub enum Cell { Live, Dead }
 
 impl Cell {
@@ -17,27 +19,27 @@ impl Cell {
 }
 
 pub struct World {
-    cells: uint,
-    rows: uint,
-    gen: uint,
+    cells: usize,
+    rows: usize,
+    gen: usize,
     state: Vec<Cell>
 }
 
-#[deriving(Show)]
+#[derive(Show)]
 pub enum GolError {
     InvalidState(&'static str)
 }
 
-#[deriving(Show, PartialEq)]
+#[derive(Show, PartialEq)]
 enum Delta {
-    Less(uint),
+    Less(usize),
     Zero,
-    More(uint)
+    More(usize)
 }
 
-fn calculate_index(dimension_size: uint, current_index: uint, delta: Delta) -> uint {
+fn calculate_index(dimension_size: usize, current_index: usize, delta: &Delta) -> usize {
     use Delta::{ Less, Zero, More };
-    match delta {
+    match *delta {
         Less(n) => {
             if current_index >= n {
                 current_index - n
@@ -61,19 +63,19 @@ fn calculate_index(dimension_size: uint, current_index: uint, delta: Delta) -> u
 
 impl World {
 
-    pub fn generation(&self) -> uint {
+    pub fn generation(&self) -> usize {
         self.gen
     }
 
-    pub fn cells(&self) -> uint {
+    pub fn cells(&self) -> usize {
         self.cells
     }
 
-    pub fn rows(&self) -> uint {
+    pub fn rows(&self) -> usize {
         self.rows
     }
 
-    pub fn try_create(rows: uint, cells: uint, state: Vec<Cell>) -> Result<World, GolError> {
+    pub fn try_create(rows: usize, cells: usize, state: Vec<Cell>) -> Result<World, GolError> {
         if cells * rows != state.len() {
             return Err(GolError::InvalidState("State does not fit rows and cells requirements"));
         }
@@ -83,21 +85,23 @@ impl World {
 
     fn get_next_state(&self) -> Vec<Cell> {
         // Generate the next world state from the current
-        Vec::from_fn(self.cells * self.rows, |index| {
+        let count = self.cells * self.rows;
+        (0..count).map(|index| {
             let row = index / self.cells;
             let cell = index % self.cells;
 
-            let curr = self.state[index];  
+            let curr = &self.state[index];
             let curr_neighbours = self.find_neighbours(row, cell);
 
             match (curr, curr_neighbours) {
-                (Cell::Live, 3) |
-                (Cell::Live, 2) |
-                (Cell::Dead, 3) => Cell::Live,
-                (Cell::Live, _) |
-                (Cell::Dead, _) => Cell::Dead
+                (&Cell::Live, 3) |
+                (&Cell::Live, 2) |
+                (&Cell::Dead, 3) => Cell::Live,
+                (&Cell::Live, _) |
+                (&Cell::Dead, _) => Cell::Dead
             }
         })
+        .collect()
     }
 
     pub fn step_mut(&mut self) {
@@ -110,16 +114,16 @@ impl World {
         World { rows: self.rows, cells: self.cells, gen: self.gen + 1, state: next_state }
     }
 
-    fn find_neighbours(&self, row: uint, cell: uint) -> u8 {
+    fn find_neighbours(&self, row: usize, cell: usize) -> u8 {
         use Delta::{ Less, Zero, More };
     
         let mut neighbours = 0;
 
-        for &row_offset in [Less(1), Zero, More(1)].iter() {
+        for row_offset in [Less(1), Zero, More(1)].iter() {
 
-            for &cell_offset in [Less(1), Zero, More(1)].iter() {
+            for cell_offset in [Less(1), Zero, More(1)].iter() {
 
-                if row_offset == Zero && cell_offset == Zero {
+                if *row_offset == Zero && *cell_offset == Zero {
                     continue; //Don't count "current" cell
                 }
 
@@ -139,15 +143,15 @@ impl World {
         neighbours
     }
 
-    pub fn write_cells(&mut self, row: uint, cell: uint, cells: uint, rows: uint, state: &[Cell]) {
+    pub fn write_cells(&mut self, row: usize, cell: usize, cells: usize, rows: usize, state: &[Cell]) {
 
-        for state_row in range(0, rows) {
-            for state_cell in range(0, cells) {
+        for state_row in (0..rows) {
+            for state_cell in (0..cells) {
 
-                let c = state[state_row * cells + state_cell];
+                let c = state[state_row * cells + state_cell].clone();
 
-                let row = calculate_index(self.rows, row, Delta::More(state_row));
-                let cell = calculate_index(self.cells, cell, Delta::More(state_cell));
+                let row = calculate_index(self.rows, row, &Delta::More(state_row));
+                let cell = calculate_index(self.cells, cell, &Delta::More(state_cell));
 
                 self.state[row * self.cells + cell] = c;
             }
@@ -162,10 +166,11 @@ impl World {
 
 pub struct RowIterator<'a> {
     w: &'a World,
-    row: uint
+    row: usize
 }
 
-impl <'a> Iterator<&'a [Cell]> for RowIterator<'a> {
+impl <'a> Iterator for RowIterator<'a> {
+    type Item = &'a [Cell];
     fn next(&mut self) -> Option<&'a [Cell]> {
         let row = self.row;
         if row == self.w.rows {
@@ -175,7 +180,7 @@ impl <'a> Iterator<&'a [Cell]> for RowIterator<'a> {
         self.row += 1;
         let start = self.w.cells * row;
         let end = start + self.w.cells;
-        Some(self.w.state.slice_or_fail(&start, &end))
+        Some(&self.w.state[start..end])
     }
 }
 

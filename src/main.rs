@@ -11,17 +11,17 @@ use gol::Cell::Live as O;
 use gol::Cell::Dead as X;
 
 #[cfg(not(test))]
+#[allow(unstable)]
 fn main() {
 
     let (rows, cells) = (20, 50);
-    let state = Vec::from_fn(rows * cells, |_| {
-        match rand::random::<bool>() { true => O, false => X }
-    });
+    let count = rows * cells;
+    let state = (0..count).map(|_| match rand::random::<bool>() { true => O, false => X }).collect();
 
     let mut w = match World::try_create(rows, cells, state) {
         Ok(w) => w,
         Err(err) => { 
-            println!("Error creating world: {}", err);
+            println!("Error creating world: {:?}", err);
             os::set_exit_status(1);
             return;
         }
