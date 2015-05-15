@@ -1,29 +1,27 @@
 #![allow(unused_imports)]
 
 extern crate gol;
+extern crate rand;
 
-use std::rand;
 use std::os;
-use std::io::timer;
-use std::time::Duration;
+use std::thread;
+use std::process::{ exit };
+use rand::{ random };
 use gol::{ World, Cell };
-use gol::Cell::Live as O;
-use gol::Cell::Dead as X;
+use gol::Cell::{ Live, Dead };
 
 #[cfg(not(test))]
-#[allow(unstable)]
 fn main() {
 
     let (rows, cells) = (20, 50);
     let count = rows * cells;
-    let state = (0..count).map(|_| match rand::random::<bool>() { true => O, false => X }).collect();
+    let state = (0..count).map(|_| if random::<bool>() { Live } else { Dead }).collect();
 
     let mut w = match World::try_create(rows, cells, state) {
         Ok(w) => w,
         Err(err) => { 
             println!("Error creating world: {:?}", err);
-            os::set_exit_status(1);
-            return;
+            exit(1);
         }
     };
 
@@ -35,8 +33,8 @@ fn main() {
         for row in w.iter_rows() {
             for cell in row.iter() {
                 match *cell {
-                    O => frame.push('@'),
-                    X => frame.push(' ')
+                    Live => frame.push('@'),
+                    Dead => frame.push(' ')
                 };
             }
             frame.push('\n');
@@ -50,6 +48,6 @@ fn main() {
         w.step_mut();
 
         //Sleep for a moment
-        timer::sleep(Duration::milliseconds(30));
+        thread::sleep_ms(30);
     }
 }

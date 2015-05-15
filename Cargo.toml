@@ -3,3 +3,6 @@
 name = "gol"
 version = "0.0.1"
 authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
+
+[dependencies]
+rand = "0.3"

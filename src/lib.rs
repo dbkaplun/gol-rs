@@ -5,7 +5,7 @@ use std::result::Result;
 use std::iter::Iterator;
 use std::option::Option;
 
-#[derive(PartialEq, Clone, Show)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Cell { Live, Dead }
 
 impl Cell {
@@ -25,12 +25,12 @@ pub struct World {
     state: Vec<Cell>
 }
 
-#[derive(Show)]
+#[derive(Debug)]
 pub enum GolError {
     InvalidState(&'static str)
 }
 
-#[derive(Show, PartialEq)]
+#[derive(Debug, PartialEq)]
 enum Delta {
     Less(usize),
     Zero,
@@ -191,22 +191,26 @@ mod test {
     use super::Delta;
     use super::Cell::Dead;
 
+    fn vec_from_fn<T, F>(count: usize, f: F) -> Vec<T> where F: FnMut(usize) -> T {
+        (0..count).map(f).collect::<Vec<T>>()
+    }
+
     #[test]
     fn can_create_world() {
         
-        let state = Vec::from_fn(100, |_| Dead);
+        let state = vec_from_fn(100, |_| Dead);
 
         let w = World::try_create(10, 10, state.clone());
         assert!(w.is_ok());
 
         let w = w.unwrap();
-        assert_eq!(state.as_slice(), w.state.as_slice());
+        assert_eq!(&state, &w.state);
     }
 
     #[test]
     fn can_fail_to_create_world() {
         
-        let state = Vec::from_fn(99, |_| Dead);
+        let state = vec_from_fn(99, |_| Dead);
 
         let w = World::try_create(10, 10, state);
 
@@ -350,27 +354,27 @@ mod test {
         //Verify that calculate_index correctly wraps the world
 
         //Middle of dimension
-        assert_eq!(super::calculate_index(10, 5, Delta::More(6)), 1);
-        assert_eq!(super::calculate_index(10, 5, Delta::More(4)), 9);
-        assert_eq!(super::calculate_index(10, 5, Delta::More(1)), 6);
-        assert_eq!(super::calculate_index(10, 5, Delta::Zero),    5);
-        assert_eq!(super::calculate_index(10, 5, Delta::Less(1)), 4);
-        assert_eq!(super::calculate_index(10, 5, Delta::Less(4)), 1);
-        assert_eq!(super::calculate_index(10, 5, Delta::Less(6)), 9);
+        assert_eq!(super::calculate_index(10, 5, &Delta::More(6)), 1);
+        assert_eq!(super::calculate_index(10, 5, &Delta::More(4)), 9);
+        assert_eq!(super::calculate_index(10, 5, &Delta::More(1)), 6);
+        assert_eq!(super::calculate_index(10, 5, &Delta::Zero),    5);
+        assert_eq!(super::calculate_index(10, 5, &Delta::Less(1)), 4);
+        assert_eq!(super::calculate_index(10, 5, &Delta::Less(4)), 1);
+        assert_eq!(super::calculate_index(10, 5, &Delta::Less(6)), 9);
 
         //End of dimension
-        assert_eq!(super::calculate_index(10, 9, Delta::More(2)), 1);
-        assert_eq!(super::calculate_index(10, 9, Delta::More(1)), 0);
-        assert_eq!(super::calculate_index(10, 9, Delta::Zero),    9);
-        assert_eq!(super::calculate_index(10, 9, Delta::Less(1)), 8);
-        assert_eq!(super::calculate_index(10, 9, Delta::Less(2)), 7);
+        assert_eq!(super::calculate_index(10, 9, &Delta::More(2)), 1);
+        assert_eq!(super::calculate_index(10, 9, &Delta::More(1)), 0);
+        assert_eq!(super::calculate_index(10, 9, &Delta::Zero),    9);
+        assert_eq!(super::calculate_index(10, 9, &Delta::Less(1)), 8);
+        assert_eq!(super::calculate_index(10, 9, &Delta::Less(2)), 7);
         
         //Start of dimension
-        assert_eq!(super::calculate_index(10, 0, Delta::More(2)), 2);
-        assert_eq!(super::calculate_index(10, 0, Delta::More(1)), 1);
-        assert_eq!(super::calculate_index(10, 0, Delta::Zero),    0);
-        assert_eq!(super::calculate_index(10, 0, Delta::Less(1)), 9);
-        assert_eq!(super::calculate_index(10, 0, Delta::Less(2)), 8);
+        assert_eq!(super::calculate_index(10, 0, &Delta::More(2)), 2);
+        assert_eq!(super::calculate_index(10, 0, &Delta::More(1)), 1);
+        assert_eq!(super::calculate_index(10, 0, &Delta::Zero),    0);
+        assert_eq!(super::calculate_index(10, 0, &Delta::Less(1)), 9);
+        assert_eq!(super::calculate_index(10, 0, &Delta::Less(2)), 8);
     }
 
     #[test]
@@ -389,7 +393,7 @@ mod test {
             X, X, X, X,
         ];
 
-        assert_eq!(expected.as_slice(), w.state.as_slice());
+        assert_eq!(&w.state, &expected);
     }
 
     #[test]
@@ -408,7 +412,7 @@ mod test {
             X, X, X, X,
         ];
 
-        assert_eq!(expected.as_slice(), w2.state.as_slice());
+        assert_eq!(&w2.state, &expected);
     }
 
 
@@ -447,7 +451,7 @@ mod test {
             X, X, X, X, X, X,
         ];
 
-        assert_eq!(w.state.as_slice(), expected.as_slice());
+        assert_eq!(&w.state, &expected);
     }
 
     #[test]
@@ -467,7 +471,7 @@ mod test {
             X, X, X,
         ];
 
-        assert_eq!(w.state.as_slice(), expected.as_slice());
+        assert_eq!(&w.state, &expected);
     }
 
     #[test]
@@ -479,9 +483,9 @@ mod test {
 
         let mut iter = w.iter_rows();
 
-        assert_eq!(iter.next().unwrap(), [X, X, O, X, X].as_slice());
-        assert_eq!(iter.next().unwrap(), [X, O, X, O, X].as_slice());
-        assert_eq!(iter.next().unwrap(), [X, X, O, X, X].as_slice());
+        assert_eq!(iter.next().unwrap(), &[X, X, O, X, X]);
+        assert_eq!(iter.next().unwrap(), &[X, O, X, O, X]);
+        assert_eq!(iter.next().unwrap(), &[X, X, O, X, X]);
         assert!(iter.next().is_none());
     }
 }
