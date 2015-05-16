@@ -1,1 +1,4 @@
 /target
+
+#Treat this as a library and exclude Cargo.lock
+Cargo.lock
