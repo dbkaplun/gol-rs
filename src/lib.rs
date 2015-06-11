@@ -204,25 +204,6 @@ impl World {
         neighbours
     }
 
-    pub fn find_neighbours_2(&self, row_index: usize, cell_index: usize) -> usize {
-    
-        let offsets = [-1, 0, 1];
-        let w = self.width();
-        let h = self.height();
-        
-        offsets
-            .iter()
-            .flat_map(|xo| offsets.iter().map(move |yo| (xo, yo)))
-            .filter(|&(xo, yo)| !(*xo == 0 && *yo == 0))
-            .map(|(xo, yo)| {
-                let row = offset_in_dim(h, row_index, yo);
-                let cell = offset_in_dim(w, cell_index, xo);
-                self.state.cell_at(cell, row)
-            })
-            .filter(|cell| cell.is_live())
-            .count()
-    }
-
     /*
     pub fn write_cells(&mut self, row: usize, cell: usize, width: usize, height: usize, state: &[Cell]) {
 
