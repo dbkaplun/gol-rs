@@ -35,7 +35,22 @@ pub struct Grid {
 impl Grid {
     #[inline]
     fn cell_at(&self, x: usize, y: usize) -> &Cell {
-        &self.cells[y * self.width + x]
+        if let Some(c) = self.cells.get(y * self.width + x) {
+            c
+        }
+        else {
+            panic!("Coordinates ({}, {}) out of range", x, y)
+        }
+    }
+
+    #[inline]
+    fn set_cell(&mut self, x: usize, y: usize, cell: Cell) {
+        if let Some(c) = self.cells.get_mut(y * self.width + x) {
+            *c = cell;
+        }
+        else {
+            panic!("Coordinates ({}, {}) out of range", x, y)
+        }
     }
 }
 
@@ -59,9 +74,9 @@ type Delta = isize;
 
 /// Calculates a new index within a wrapped dimension of `dimension_size`
 /// based on a `current_index` and a `delta`.
-fn offset_in_dim(dimension_size: usize, current_index: usize, delta: &Delta) -> usize {
+fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> usize {
 
-    match *delta {
+    match delta {
         n if n < 0 => {
             //convert to unsigned representing a subtraction
             let to_subtract = n.abs() as usize; 
@@ -192,8 +207,8 @@ impl World {
                     continue; //Don't count "current" cell
                 }
 
-                let row_index = offset_in_dim(h, row_index, row_offset);
-                let cell_index = offset_in_dim(w, cell_index, cell_offset);
+                let row_index = offset_in_dim(h, row_index, *row_offset);
+                let cell_index = offset_in_dim(w, cell_index, *cell_offset);
 
                 if self.state.cell_at(cell_index, row_index).is_live() {
                     neighbours += 1;
@@ -204,23 +219,21 @@ impl World {
         neighbours
     }
 
-    /*
-    pub fn write_cells(&mut self, row: usize, cell: usize, width: usize, height: usize, state: &[Cell]) {
+    /// Overwrite the cells starting at coords (x, y)
+    pub fn write_cells(&mut self, x: usize, y: usize, data: &Grid) {
 
-        for state_row in (0..height) {
-            for state_cell in (0..width) {
+        for data_y in (0..data.height) {
+            for data_x in (0..data.width) {
 
-                let c = state[state_row * width + state_cell].clone();
+                let state_y = offset_in_dim(self.state.height, y, data_y as isize);
+                let state_x = offset_in_dim(self.state.width, x, data_x as isize);
 
-                let row = offset_in_dim(self.height(), row, &Delta::More(state_row));
-                let cell = offset_in_dim(self.width(), cell, &Delta::More(state_cell));
-
-                self.state.cells[row * self.width() + cell] = c;
+                let cell = data.cell_at(data_x, data_y);
+                self.state.set_cell(state_x, state_y, cell.clone());
             }
         }
 
     }
-    */
  
     pub fn iter_rows(&self) -> RowIterator {
         RowIterator { grid: &self.state, row: 0 }
@@ -459,27 +472,27 @@ mod tests {
         //Verify that offset_in_dim correctly wraps the world
 
         //Middle of dimension
-        assert_eq!(super::offset_in_dim(10, 5, &(6 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 5, &(4 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 5, &(1 as Delta)), 6);
-        assert_eq!(super::offset_in_dim(10, 5, &(0 as Delta)), 5);
-        assert_eq!(super::offset_in_dim(10, 5, &(-1 as Delta)), 4);
-        assert_eq!(super::offset_in_dim(10, 5, &(-4 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 5, &(-6 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 5, (6 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 5, (4 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 5, (1 as Delta)), 6);
+        assert_eq!(super::offset_in_dim(10, 5, (0 as Delta)), 5);
+        assert_eq!(super::offset_in_dim(10, 5, (-1 as Delta)), 4);
+        assert_eq!(super::offset_in_dim(10, 5, (-4 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 5, (-6 as Delta)), 9);
 
         //End of dimension
-        assert_eq!(super::offset_in_dim(10, 9, &(2 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 9, &(1 as Delta)), 0);
-        assert_eq!(super::offset_in_dim(10, 9, &(0 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 9, &(-1 as Delta)), 8);
-        assert_eq!(super::offset_in_dim(10, 9, &(-2 as Delta)), 7);
+        assert_eq!(super::offset_in_dim(10, 9, (2 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 9, (1 as Delta)), 0);
+        assert_eq!(super::offset_in_dim(10, 9, (0 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 9, (-1 as Delta)), 8);
+        assert_eq!(super::offset_in_dim(10, 9, (-2 as Delta)), 7);
         
         //Start of dimension
-        assert_eq!(super::offset_in_dim(10, 0, &(2 as Delta)), 2);
-        assert_eq!(super::offset_in_dim(10, 0, &(1 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 0, &(0 as Delta)),    0);
-        assert_eq!(super::offset_in_dim(10, 0, &(-1 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 0, &(-2 as Delta)), 8);
+        assert_eq!(super::offset_in_dim(10, 0, (2 as Delta)), 2);
+        assert_eq!(super::offset_in_dim(10, 0, (1 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 0, (0 as Delta)),    0);
+        assert_eq!(super::offset_in_dim(10, 0, (-1 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 0, (-2 as Delta)), 8);
     }
 
     #[test]
@@ -580,7 +593,7 @@ mod tests {
     }
 
     #[test]
-    fn can_iterate_height_in_oblong_world_correctly() {
+    fn can_iterate_rows_in_oblong_world_correctly() {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
@@ -592,5 +605,66 @@ mod tests {
         assert_eq!(iter.next().unwrap(), &[X, O, X, O, X]);
         assert_eq!(iter.next().unwrap(), &[X, X, O, X, X]);
         assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn can_get_and_set_cell_in_grid() {
+
+        let mut grid = Grid::create_dead(10, 10);
+
+        assert_eq!(&Dead, grid.cell_at(2, 2));
+
+        grid.set_cell(2, 2, Live);
+
+        assert_eq!(&Live, grid.cell_at(2, 2));
+    }
+
+    #[test]
+    #[should_panic(expected="out of range")]
+    fn get_cell_out_of_range_panics() {
+
+        let grid = Grid::create_dead(10, 10);
+
+        grid.cell_at(10, 10);
+    }
+
+    #[test]
+    #[should_panic(expected="out of range")]
+    fn set_cell_out_of_range_panics() {
+
+        let mut grid = Grid::create_dead(10, 10);
+
+        grid.set_cell(10, 10, Live);
+    }
+
+    #[test]
+    fn can_set_region_in_world() {
+
+        use super::Cell::Dead as X;
+        use super::Cell::Live as O;
+
+        let new_data = Grid::from_raw(3, 3, vec![
+            O, O, O,
+            O, X, O,
+            O, O, O,
+        ]);
+
+        //write from top left
+        let mut w = make_lonely_world();
+        w.write_cells(0, 0, &new_data);
+
+        assert_eq!(&w.state, &new_data);
+
+        //write from bottom right
+        let mut w = make_lonely_world();
+        w.write_cells(2, 2, &new_data);
+
+        let expected = &Grid::from_raw(3, 3, vec![
+            X, O, O,
+            O, O, O,
+            O, O, O,
+        ]);
+        assert_eq!(&w.state, expected);
+
     }
 }
