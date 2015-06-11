@@ -128,7 +128,7 @@ impl Grid {
         Grid { width: width, height: height, cells: cells }
     }
 
-    pub fn create_dead(height: usize, width: usize) -> Grid {
+    pub fn create_dead(width: usize, height: usize) -> Grid {
         let count = width * height;
 
         Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
