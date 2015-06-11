@@ -7,69 +7,6 @@ use std::fmt::{ Debug, Formatter, Error };
 
 use rand::{ Rng };
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum Cell { Live, Dead }
-
-impl Cell {
-    pub fn is_live(&self) -> bool {
-        match self { &Cell::Live => true, _ => false }
-    }
-
-    pub fn is_dead(&self) -> bool {
-        match self { &Cell::Dead => true, _ => false }
-    }
-}
-
-pub struct World {
-    gen: i64,
-    state: Grid
-}
-
-#[derive(PartialEq, Clone)]
-pub struct Grid {
-    width: usize,
-    height: usize,
-    cells: Vec<Cell>
-}
-
-impl Grid {
-    #[inline]
-    fn cell_at(&self, x: usize, y: usize) -> &Cell {
-        if let Some(c) = self.cells.get(y * self.width + x) {
-            c
-        }
-        else {
-            panic!("Coordinates ({}, {}) out of range", x, y)
-        }
-    }
-
-    #[inline]
-    fn set_cell(&mut self, x: usize, y: usize, cell: Cell) {
-        if let Some(c) = self.cells.get_mut(y * self.width + x) {
-            *c = cell;
-        }
-        else {
-            panic!("Coordinates ({}, {}) out of range", x, y)
-        }
-    }
-}
-
-impl Debug for Grid {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-
-        try!(write!(f, "{}x{} grid:", self.width, self.height));
-
-        for row in (RowIterator { grid: self, row: 0 }) {
-            try!(write!(f, "\n"));
-            for cell in row {
-                try!(write!(f, "{}", if cell.is_live() { "O" } else { "." }));
-            }
-        }
-
-        Ok(())
-    }
-}
-
 type Delta = isize;
 
 /// Calculates a new index within a wrapped dimension of `dimension_size`
@@ -111,7 +48,28 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
     }
 }
 
+#[derive(PartialEq, Clone, Debug)]
+pub enum Cell { Live, Dead }
+
+impl Cell {
+    pub fn is_live(&self) -> bool {
+        match self { &Cell::Live => true, _ => false }
+    }
+
+    pub fn is_dead(&self) -> bool {
+        match self { &Cell::Dead => true, _ => false }
+    }
+}
+
+#[derive(PartialEq, Clone)]
+pub struct Grid {
+    width: usize,
+    height: usize,
+    cells: Vec<Cell>
+}
+
 impl Grid {
+    
     pub fn from_raw(width: usize, height: usize, state: Vec<Cell>) -> Grid {
         let count = width * height;
 
@@ -138,6 +96,47 @@ impl Grid {
         let choices = [ Cell::Live, Cell::Dead ];
         Grid::from_fn(width, height, |_| rng.choose(&choices).unwrap().clone())
     }
+
+    #[inline]
+    fn cell_at(&self, x: usize, y: usize) -> &Cell {
+        if let Some(c) = self.cells.get(y * self.width + x) {
+            c
+        }
+        else {
+            panic!("Coordinates ({}, {}) out of range", x, y)
+        }
+    }
+
+    #[inline]
+    fn set_cell(&mut self, x: usize, y: usize, cell: Cell) {
+        if let Some(c) = self.cells.get_mut(y * self.width + x) {
+            *c = cell;
+        }
+        else {
+            panic!("Coordinates ({}, {}) out of range", x, y)
+        }
+    }
+}
+
+impl Debug for Grid {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+
+        try!(write!(f, "{}x{} grid:", self.width, self.height));
+
+        for row in (RowIterator { grid: self, row: 0 }) {
+            try!(write!(f, "\n"));
+            for cell in row {
+                try!(write!(f, "{}", if cell.is_live() { "O" } else { "." }));
+            }
+        }
+
+        Ok(())
+    }
+}
+
+pub struct World {
+    gen: i64,
+    state: Grid
 }
 
 impl World {
@@ -164,17 +163,16 @@ impl World {
         let h = self.state.height;
 
         let new_cells = self.state.cells.iter().enumerate().map(|(index, cell)| {
-            let row_index = index / w;
-            let cell_index = index % w;
+            let y = index / w;
+            let x = index % w;
 
-            let neighbours = self.find_neighbours(row_index, cell_index);
+            let neighbours = self.find_neighbours(x, y);
 
             match (cell, neighbours) {
                 (&Cell::Live, 3) |
                 (&Cell::Live, 2) |
                 (&Cell::Dead, 3) => Cell::Live,
-                (&Cell::Live, _) |
-                (&Cell::Dead, _) => Cell::Dead
+                ________________ => Cell::Dead
             }
         })
         .collect();
@@ -192,29 +190,23 @@ impl World {
         World { gen: self.gen + 1, state: next_state }
     }
 
-    pub fn find_neighbours(&self, row_index: usize, cell_index: usize) -> usize {
+    pub fn find_neighbours(&self, x: usize, y: usize) -> usize {
     
-        let offsets = [-1, 0, 1];
-        let w = self.width();
-        let h = self.height();
-
-        let mut neighbours = 0;
-
-        for row_offset in &offsets {
-            for cell_offset in &offsets {
-
-                if *row_offset == 0 && *cell_offset == 0 {
-                    continue; //Don't count "current" cell
-                }
-
-                let row_index = offset_in_dim(h, row_index, *row_offset);
-                let cell_index = offset_in_dim(w, cell_index, *cell_offset);
-
-                if self.state.cell_at(cell_index, row_index).is_live() {
-                    neighbours += 1;
-                }
-            }
-        }
+        let offsets = &[-1, 0, 1];
+        let (w, h) = (self.width(), self.height());
+        
+        let neighbours = 
+            offsets
+            .iter()
+            .flat_map(|x_offset| offsets.iter().map(move |y_offset| (*x_offset, *y_offset)))
+            .filter(|&offset| offset != (0, 0))
+            .map(|(x_offset, y_offset)| {
+                let y = offset_in_dim(h, y, y_offset);
+                let x = offset_in_dim(w, x, x_offset);
+                self.state.cell_at(x, y)
+            })
+            .filter(|cell| cell.is_live())
+            .count();
 
         neighbours
     }
@@ -414,7 +406,7 @@ mod tests {
 
         let w = make_pipe_world();
 
-        let neighbours = w.find_neighbours(1, 2);
+        let neighbours = w.find_neighbours(2, 1);
 
         assert_eq!(neighbours, 3);
     }
@@ -424,7 +416,7 @@ mod tests {
 
         let w = make_pipe_world();
 
-        let neighbours = w.find_neighbours(1, 0);
+        let neighbours = w.find_neighbours(0, 1);
 
         assert_eq!(neighbours, 3);
     }
@@ -443,7 +435,7 @@ mod tests {
     fn can_count_neighbours_on_oblong_world() {
         let w = make_oblong_world();
 
-        let neighbours = w.find_neighbours(1, 2);
+        let neighbours = w.find_neighbours(2, 1);
 
         assert_eq!(neighbours, 4);
     }
@@ -452,7 +444,7 @@ mod tests {
     fn can_count_neighbours_at_bottom_right_of_oblong_world() {
         let w = make_oblong_world();
 
-        let neighbours = w.find_neighbours(2, 4);
+        let neighbours = w.find_neighbours(4, 2);
 
         assert_eq!(neighbours, 1);
     }
