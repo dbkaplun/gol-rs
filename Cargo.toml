@@ -6,4 +6,3 @@ authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
 
 [dependencies]
 rand = "0.3"
-time = "0.1"

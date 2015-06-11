@@ -2,15 +2,12 @@
 
 extern crate gol;
 extern crate rand;
-extern crate time;
 
 use std::os;
 use std::thread;
 use std::process::{ exit };
 
 use rand::{ Rng, thread_rng };
-
-use time::{ Duration };
 
 use gol::{ Grid, World, Cell };
 use gol::Cell::{ Live, Dead };
