@@ -6,34 +6,29 @@ extern crate rand;
 use std::os;
 use std::thread;
 use std::process::{ exit };
-use rand::{ random };
-use gol::{ World, Cell };
+use rand::{ Rng, thread_rng };
+use gol::{ Grid, World, Cell };
 use gol::Cell::{ Live, Dead };
 
 #[cfg(not(test))]
 fn main() {
 
-    let (rows, cells) = (20, 50);
-    let count = rows * cells;
-    let state = (0..count).map(|_| if random::<bool>() { Live } else { Dead }).collect();
+    let (width, height) = (50, 20);
 
-    let mut w = match World::try_create(rows, cells, state) {
-        Ok(w) => w,
-        Err(err) => { 
-            println!("Error creating world: {:?}", err);
-            exit(1);
-        }
-    };
+    let mut rng = thread_rng();
+    let grid = Grid::create_random(&mut rng, width, height);
+
+    let mut w = World::new(grid);
 
     // A single frame of output
-    let mut frame = String::with_capacity((w.cells() + 1) * w.rows());
+    let mut frame = String::with_capacity((width + 1) * height);
 
     loop {
         //Print world
         for row in w.iter_rows() {
             for cell in row.iter() {
                 match *cell {
-                    Live => frame.push('@'),
+                    Live => frame.push('O'),
                     Dead => frame.push(' ')
                 };
             }
@@ -48,6 +43,6 @@ fn main() {
         w.step_mut();
 
         //Sleep for a moment
-        thread::sleep_ms(30);
+        thread::sleep_ms(50);
     }
 }

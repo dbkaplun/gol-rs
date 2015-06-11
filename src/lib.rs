@@ -1,99 +1,155 @@
 #![allow(missing_copy_implementations)]
 
+extern crate rand;
+
 use std::vec::Vec;
-use std::result::Result;
 use std::iter::Iterator;
 use std::option::Option;
+use std::fmt::{ Debug, Formatter, Error };
+
+use rand::{ Rng };
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Cell { Live, Dead }
 
 impl Cell {
     pub fn is_live(&self) -> bool {
-        match *self { Cell::Live => true, _ => false }
+        match self { &Cell::Live => true, _ => false }
     }
 
     pub fn is_dead(&self) -> bool {
-        match *self { Cell::Dead => true, _ => false }
+        match self { &Cell::Dead => true, _ => false }
     }
 }
 
 pub struct World {
-    cells: usize,
-    rows: usize,
     gen: usize,
-    state: Vec<Cell>
+    state: Grid
 }
 
-#[derive(Debug)]
-pub enum GolError {
-    InvalidState(&'static str)
+#[derive(PartialEq, Clone)]
+pub struct Grid {
+    width: usize,
+    height: usize,
+    cells: Vec<Cell>
 }
 
-#[derive(Debug, PartialEq)]
-enum Delta {
-    Less(usize),
-    Zero,
-    More(usize)
-}
+impl Debug for Grid {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
 
-fn calculate_index(dimension_size: usize, current_index: usize, delta: &Delta) -> usize {
-    use Delta::{ Less, Zero, More };
-    match *delta {
-        Less(n) => {
-            if current_index >= n {
-                current_index - n
-            }
-            else {
-                dimension_size - (n - current_index)
-            }
-        },
-        Zero => { current_index },
-        More(n) => {
-            let diff = dimension_size - current_index;
-            if diff > n {
-                current_index + n
-            }
-            else {
-                n - diff
+        try!(write!(f, "{}x{} grid:", self.width, self.height));
+
+        for row in (RowIterator { grid: self, row: 0 }) {
+            try!(write!(f, "\n"));
+            for cell in row {
+                try!(write!(f, "{}", if cell.is_live() { "O" } else { "." }));
             }
         }
+
+        Ok(())
+    }
+}
+
+type Delta = isize;
+
+/// Calculates a new index within a wrapped dimension of `dimension_size`
+/// based on a `current_index` and a `delta`.
+fn offset_in_dim(dimension_size: usize, current_index: usize, delta: &Delta) -> usize {
+
+    match *delta {
+        n if n < 0 => {
+            //convert to unsigned representing a subtraction
+            let to_subtract = n.abs() as usize; 
+
+            if current_index >= to_subtract {
+                current_index - to_subtract
+            }
+            else {
+                //wrap to end of dimension
+                dimension_size - (to_subtract - current_index)
+            }
+        },
+        0 => { 
+            current_index
+        },
+        n if n > 0 => {
+            //convert to unsigned representing an addition
+            let to_add = n.abs() as usize;
+
+            let delta_to_end = dimension_size - current_index;
+            if delta_to_end > to_add {
+                current_index + to_add
+            }
+            else { 
+                //wrap to beginning of dimension
+                to_add - delta_to_end
+            }
+        },
+        _ => {
+            panic!(print!("Unexpected delta: {}", delta))
+        }
+    }
+}
+
+impl Grid {
+    pub fn from_raw(width: usize, height: usize, state: Vec<Cell>) -> Grid {
+        let count = width * height;
+
+        if count != state.len() {
+            panic!("Invalid height and width");
+        }
+
+        Grid { width: width, height: height, cells: state }
+    }
+
+    fn from_fn<F>(width: usize, height: usize, f: F) -> Grid where F: FnMut(usize) -> Cell {
+        let count = width * height;
+        let cells = (0..count).map(f).collect();
+        Grid { width: width, height: height, cells: cells }
+    }
+
+    pub fn create_dead(height: usize, width: usize) -> Grid {
+        let count = width * height;
+
+        Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
+    }
+
+    pub fn create_random<R: Rng>(rng: &mut R, width: usize, height: usize) -> Grid {
+        let choices = [ Cell::Live, Cell::Dead ];
+        Grid::from_fn(width, height, |_| rng.choose(&choices).unwrap().clone())
     }
 }
 
 impl World {
 
+    pub fn new(grid: Grid) -> World {
+        World { gen: 0, state: grid }
+    }
+
     pub fn generation(&self) -> usize {
         self.gen
     }
 
-    pub fn cells(&self) -> usize {
-        self.cells
+    pub fn width(&self) -> usize {
+        self.state.width
     }
 
-    pub fn rows(&self) -> usize {
-        self.rows
+    pub fn height(&self) -> usize {
+        self.state.height
     }
 
-    pub fn try_create(rows: usize, cells: usize, state: Vec<Cell>) -> Result<World, GolError> {
-        if cells * rows != state.len() {
-            return Err(GolError::InvalidState("State does not fit rows and cells requirements"));
-        }
-
-        Ok(World { cells: cells, rows: rows, gen: 0, state: state })
-    }
-
-    fn get_next_state(&self) -> Vec<Cell> {
+    fn get_next_state(&self) -> Grid {
         // Generate the next world state from the current
-        let count = self.cells * self.rows;
-        (0..count).map(|index| {
-            let row = index / self.cells;
-            let cell = index % self.cells;
+        let w = self.state.width;
+        let h = self.state.height;
 
-            let curr = &self.state[index];
-            let curr_neighbours = self.find_neighbours(row, cell);
+        let new_cells = self.state.cells.iter().enumerate().map(|(index, cell)| {
+            let row_index = index / w;
+            let cell_index = index % w;
 
-            match (curr, curr_neighbours) {
+            let neighbours = self.find_neighbours(row_index, cell_index);
+
+            match (cell, neighbours) {
                 (&Cell::Live, 3) |
                 (&Cell::Live, 2) |
                 (&Cell::Dead, 3) => Cell::Live,
@@ -101,7 +157,9 @@ impl World {
                 (&Cell::Dead, _) => Cell::Dead
             }
         })
-        .collect()
+        .collect();
+
+        Grid::from_raw(w, h, new_cells)
     }
 
     pub fn step_mut(&mut self) {
@@ -111,27 +169,26 @@ impl World {
 
     pub fn step(&self) -> World {
         let next_state = self.get_next_state();
-        World { rows: self.rows, cells: self.cells, gen: self.gen + 1, state: next_state }
+        World { gen: self.gen + 1, state: next_state }
     }
 
-    fn find_neighbours(&self, row: usize, cell: usize) -> u8 {
-        use Delta::{ Less, Zero, More };
+    fn find_neighbours(&self, row_index: usize, cell_index: usize) -> u8 {
     
+        let offsets = [-1, 0, 1];
         let mut neighbours = 0;
 
-        for row_offset in [Less(1), Zero, More(1)].iter() {
+        for row_offset in &offsets {
+            for cell_offset in &offsets {
 
-            for cell_offset in [Less(1), Zero, More(1)].iter() {
-
-                if *row_offset == Zero && *cell_offset == Zero {
-                    continue; //Don't count "current" cell
+                if *row_offset == 0 && *cell_offset == 0 {
+                    continue; //Don't count "current" cell_index
                 }
 
-                let row = calculate_index(self.rows, row, row_offset);
-                let cell = calculate_index(self.cells, cell, cell_offset);
+                let row_index = offset_in_dim(self.height(), row_index, row_offset);
+                let cell_index = offset_in_dim(self.width(), cell_index, cell_offset);
 
                 let neighbour_is_alive = 
-                    self.state[row * self.cells + cell]
+                    self.state.cells[row_index * self.width() + cell_index]
                         .is_live();
 
                 if neighbour_is_alive {
@@ -143,29 +200,31 @@ impl World {
         neighbours
     }
 
-    pub fn write_cells(&mut self, row: usize, cell: usize, cells: usize, rows: usize, state: &[Cell]) {
+    /*
+    pub fn write_cells(&mut self, row: usize, cell: usize, width: usize, height: usize, state: &[Cell]) {
 
-        for state_row in (0..rows) {
-            for state_cell in (0..cells) {
+        for state_row in (0..height) {
+            for state_cell in (0..width) {
 
-                let c = state[state_row * cells + state_cell].clone();
+                let c = state[state_row * width + state_cell].clone();
 
-                let row = calculate_index(self.rows, row, &Delta::More(state_row));
-                let cell = calculate_index(self.cells, cell, &Delta::More(state_cell));
+                let row = offset_in_dim(self.height(), row, &Delta::More(state_row));
+                let cell = offset_in_dim(self.width(), cell, &Delta::More(state_cell));
 
-                self.state[row * self.cells + cell] = c;
+                self.state.cells[row * self.width() + cell] = c;
             }
         }
 
     }
+    */
  
     pub fn iter_rows(&self) -> RowIterator {
-        RowIterator { w: self, row: 0 }
+        RowIterator { grid: &self.state, row: 0 }
     }
 }
 
 pub struct RowIterator<'a> {
-    w: &'a World,
+    grid: &'a Grid,
     row: usize
 }
 
@@ -173,48 +232,84 @@ impl <'a> Iterator for RowIterator<'a> {
     type Item = &'a [Cell];
     fn next(&mut self) -> Option<&'a [Cell]> {
         let row = self.row;
-        if row == self.w.rows {
+        if row == self.grid.height {
             return None;
         }
         //increment iterator
         self.row += 1;
-        let start = self.w.cells * row;
-        let end = start + self.w.cells;
-        Some(&self.w.state[start..end])
+        let start = self.grid.width * row;
+        let end = start + self.grid.width;
+        Some(&self.grid.cells[start..end])
     }
 }
 
 #[cfg(test)]
 mod test {
 
-    use super::World;
-    use super::Delta;
-    use super::Cell::Dead;
+    use rand::{ thread_rng };
+
+    use super::{ World, Grid, Delta };
+    use super::Cell::{ Live, Dead };
 
     fn vec_from_fn<T, F>(count: usize, f: F) -> Vec<T> where F: FnMut(usize) -> T {
         (0..count).map(f).collect::<Vec<T>>()
     }
 
     #[test]
-    fn can_create_world() {
+    fn can_create_grid_from_fn() {
         
-        let state = vec_from_fn(100, |_| Dead);
+        let grid = Grid::from_fn(10, 10, |_| Live);
 
-        let w = World::try_create(10, 10, state.clone());
-        assert!(w.is_ok());
+        assert_eq!(grid.width, 10);
+        assert_eq!(grid.height, 10);
+        assert_eq!(grid.cells.len(), 100);
 
-        let w = w.unwrap();
-        assert_eq!(&state, &w.state);
+        for cell in &grid.cells {
+            assert_eq!(&Live, cell)
+        }
     }
 
     #[test]
-    fn can_fail_to_create_world() {
+    fn can_create_dead_grid() {
+        
+        let grid = Grid::create_dead(10, 10);
+
+        assert_eq!(grid.width, 10);
+        assert_eq!(grid.height, 10);
+        assert_eq!(grid.cells.len(), 100);
+
+        for cell in &grid.cells {
+            assert_eq!(&Dead, cell)
+        }
+    }
+
+    #[test]
+    fn can_create_random_grid() {
+        
+        let mut rng = thread_rng();
+
+        let grid = Grid::create_random(&mut rng, 10, 10);
+
+        assert_eq!(grid.width, 10);
+        assert_eq!(grid.height, 10);
+        assert_eq!(grid.cells.len(), 100);
+    }
+
+    #[test]
+    fn can_create_world_with_grid() {
+        
+        let grid = Grid::from_fn(10, 10, |_| Dead);
+        let w = World::new(grid.clone());
+        assert_eq!(&grid.cells, &w.state.cells);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid height and width")]
+    fn creating_grid_with_invalid_raw_state_panics() {
         
         let state = vec_from_fn(99, |_| Dead);
 
-        let w = World::try_create(10, 10, state);
-
-        assert!(w.is_err());
+        Grid::from_raw(10, 10, state);
     }
 
     fn make_square_world() -> World {
@@ -226,7 +321,8 @@ mod test {
             O, X, O,
             O, O, O,
         ];
-        World::try_create(3, 3, state).unwrap()
+
+        World::new(Grid::from_raw(3, 3, state))
     }
 
     fn make_pipe_world() -> World {
@@ -239,7 +335,8 @@ mod test {
             X, X, X, O,
             X, X, X, X,
         ];
-        World::try_create(4, 4, state).unwrap()
+
+        World::new(Grid::from_raw(4, 4, state))
     }
 
     fn make_lonely_world() -> World {
@@ -251,7 +348,8 @@ mod test {
             X, O, X,
             X, X, X,
         ];
-        World::try_create(3, 3, state).unwrap()
+
+        World::new(Grid::from_raw(3, 3, state))
     }
 
     fn make_oblong_world() -> World {
@@ -264,7 +362,8 @@ mod test {
         /* 1 */ X, O, X, O, X,
         /* 2 */ X, X, O, X, X,
         ];
-        World::try_create(3, 5, state).unwrap()
+
+        World::new(Grid::from_raw(5, 3, state))
     }
 
     fn make_glider_world() -> World {
@@ -278,7 +377,8 @@ mod test {
             X, X, O, O, X, X,
             X, X, X, X, X, X,
         ];
-        World::try_create(5, 6, state).unwrap()
+
+        World::new(Grid::from_raw(6, 5, state))
     }
 
     #[test]
@@ -351,30 +451,30 @@ mod test {
     #[test]
     fn can_calculate_index() {
 
-        //Verify that calculate_index correctly wraps the world
+        //Verify that offset_in_dim correctly wraps the world
 
         //Middle of dimension
-        assert_eq!(super::calculate_index(10, 5, &Delta::More(6)), 1);
-        assert_eq!(super::calculate_index(10, 5, &Delta::More(4)), 9);
-        assert_eq!(super::calculate_index(10, 5, &Delta::More(1)), 6);
-        assert_eq!(super::calculate_index(10, 5, &Delta::Zero),    5);
-        assert_eq!(super::calculate_index(10, 5, &Delta::Less(1)), 4);
-        assert_eq!(super::calculate_index(10, 5, &Delta::Less(4)), 1);
-        assert_eq!(super::calculate_index(10, 5, &Delta::Less(6)), 9);
+        assert_eq!(super::offset_in_dim(10, 5, &(6 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 5, &(4 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 5, &(1 as Delta)), 6);
+        assert_eq!(super::offset_in_dim(10, 5, &(0 as Delta)), 5);
+        assert_eq!(super::offset_in_dim(10, 5, &(-1 as Delta)), 4);
+        assert_eq!(super::offset_in_dim(10, 5, &(-4 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 5, &(-6 as Delta)), 9);
 
         //End of dimension
-        assert_eq!(super::calculate_index(10, 9, &Delta::More(2)), 1);
-        assert_eq!(super::calculate_index(10, 9, &Delta::More(1)), 0);
-        assert_eq!(super::calculate_index(10, 9, &Delta::Zero),    9);
-        assert_eq!(super::calculate_index(10, 9, &Delta::Less(1)), 8);
-        assert_eq!(super::calculate_index(10, 9, &Delta::Less(2)), 7);
+        assert_eq!(super::offset_in_dim(10, 9, &(2 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 9, &(1 as Delta)), 0);
+        assert_eq!(super::offset_in_dim(10, 9, &(0 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 9, &(-1 as Delta)), 8);
+        assert_eq!(super::offset_in_dim(10, 9, &(-2 as Delta)), 7);
         
         //Start of dimension
-        assert_eq!(super::calculate_index(10, 0, &Delta::More(2)), 2);
-        assert_eq!(super::calculate_index(10, 0, &Delta::More(1)), 1);
-        assert_eq!(super::calculate_index(10, 0, &Delta::Zero),    0);
-        assert_eq!(super::calculate_index(10, 0, &Delta::Less(1)), 9);
-        assert_eq!(super::calculate_index(10, 0, &Delta::Less(2)), 8);
+        assert_eq!(super::offset_in_dim(10, 0, &(2 as Delta)), 2);
+        assert_eq!(super::offset_in_dim(10, 0, &(1 as Delta)), 1);
+        assert_eq!(super::offset_in_dim(10, 0, &(0 as Delta)),    0);
+        assert_eq!(super::offset_in_dim(10, 0, &(-1 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 0, &(-2 as Delta)), 8);
     }
 
     #[test]
@@ -386,12 +486,12 @@ mod test {
 
         w.step_mut();
 
-        let expected = [
+        let expected = Grid::from_raw(4, 4, vec![
             X, X, X, X,
             O, X, O, O,
             X, X, X, X,
             X, X, X, X,
-        ];
+        ]);
 
         assert_eq!(&w.state, &expected);
     }
@@ -405,12 +505,12 @@ mod test {
 
         let w2 = w.step();
 
-        let expected = [
+        let expected = Grid::from_raw(4, 4, vec![
             X, X, X, X,
             O, X, O, O,
             X, X, X, X,
             X, X, X, X,
-        ];
+        ]);
 
         assert_eq!(&w2.state, &expected);
     }
@@ -443,13 +543,13 @@ mod test {
         w.step_mut();
         w.step_mut();
 
-        let expected = [
+        let expected = Grid::from_raw(6, 5, vec![
             X, X, X, X, X, X,
             X, X, X, O, X, X,
             X, X, X, X, O, X,
             X, X, O, O, O, X,
             X, X, X, X, X, X,
-        ];
+        ]);
 
         assert_eq!(&w.state, &expected);
     }
@@ -465,17 +565,17 @@ mod test {
         w.step_mut();
         w.step_mut();
 
-        let expected = [
+        let expected = Grid::from_raw(3, 3, vec![
             X, X, X,
             X, X, X,
             X, X, X,
-        ];
+        ]);
 
         assert_eq!(&w.state, &expected);
     }
 
     #[test]
-    fn can_iterate_rows_in_oblong_world_correctly() {
+    fn can_iterate_height_in_oblong_world_correctly() {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
