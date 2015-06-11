@@ -21,7 +21,7 @@ impl Cell {
 }
 
 pub struct World {
-    gen: usize,
+    gen: i64,
     state: Grid
 }
 
@@ -146,7 +146,7 @@ impl World {
         World { gen: 0, state: grid }
     }
 
-    pub fn generation(&self) -> usize {
+    pub fn generation(&self) -> i64 {
         self.gen
     }
 
