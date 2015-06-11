@@ -1,5 +1,3 @@
-#![allow(missing_copy_implementations)]
-
 extern crate rand;
 
 use std::vec::Vec;
@@ -32,6 +30,13 @@ pub struct Grid {
     width: usize,
     height: usize,
     cells: Vec<Cell>
+}
+
+impl Grid {
+    #[inline]
+    fn cell_at(&self, x: usize, y: usize) -> &Cell {
+        &self.cells[y * self.width + x]
+    }
 }
 
 impl Debug for Grid {
@@ -172,32 +177,50 @@ impl World {
         World { gen: self.gen + 1, state: next_state }
     }
 
-    fn find_neighbours(&self, row_index: usize, cell_index: usize) -> u8 {
+    pub fn find_neighbours(&self, row_index: usize, cell_index: usize) -> usize {
     
         let offsets = [-1, 0, 1];
+        let w = self.width();
+        let h = self.height();
+
         let mut neighbours = 0;
 
         for row_offset in &offsets {
             for cell_offset in &offsets {
 
                 if *row_offset == 0 && *cell_offset == 0 {
-                    continue; //Don't count "current" cell_index
+                    continue; //Don't count "current" cell
                 }
 
-                let row_index = offset_in_dim(self.height(), row_index, row_offset);
-                let cell_index = offset_in_dim(self.width(), cell_index, cell_offset);
+                let row_index = offset_in_dim(h, row_index, row_offset);
+                let cell_index = offset_in_dim(w, cell_index, cell_offset);
 
-                let neighbour_is_alive = 
-                    self.state.cells[row_index * self.width() + cell_index]
-                        .is_live();
-
-                if neighbour_is_alive {
+                if self.state.cell_at(cell_index, row_index).is_live() {
                     neighbours += 1;
                 }
             }
         }
 
         neighbours
+    }
+
+    pub fn find_neighbours_2(&self, row_index: usize, cell_index: usize) -> usize {
+    
+        let offsets = [-1, 0, 1];
+        let w = self.width();
+        let h = self.height();
+        
+        offsets
+            .iter()
+            .flat_map(|xo| offsets.iter().map(move |yo| (xo, yo)))
+            .filter(|&(xo, yo)| !(*xo == 0 && *yo == 0))
+            .map(|(xo, yo)| {
+                let row = offset_in_dim(h, row_index, yo);
+                let cell = offset_in_dim(w, cell_index, xo);
+                self.state.cell_at(cell, row)
+            })
+            .filter(|cell| cell.is_live())
+            .count()
     }
 
     /*
@@ -244,15 +267,16 @@ impl <'a> Iterator for RowIterator<'a> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
-    use rand::{ thread_rng };
+    use rand::{ SeedableRng, StdRng };
 
     use super::{ World, Grid, Delta };
     use super::Cell::{ Live, Dead };
 
-    fn vec_from_fn<T, F>(count: usize, f: F) -> Vec<T> where F: FnMut(usize) -> T {
-        (0..count).map(f).collect::<Vec<T>>()
+    fn make_rng() -> StdRng {
+        let seed: &[_] = &[1, 2, 3, 4];
+        SeedableRng::from_seed(seed)
     }
 
     #[test]
@@ -286,7 +310,7 @@ mod test {
     #[test]
     fn can_create_random_grid() {
         
-        let mut rng = thread_rng();
+        let mut rng = make_rng();
 
         let grid = Grid::create_random(&mut rng, 10, 10);
 
@@ -307,7 +331,7 @@ mod test {
     #[should_panic(expected = "Invalid height and width")]
     fn creating_grid_with_invalid_raw_state_panics() {
         
-        let state = vec_from_fn(99, |_| Dead);
+        let state = vec![Dead; 99];
 
         Grid::from_raw(10, 10, state);
     }
