@@ -5,4 +5,5 @@ version = "0.0.2"
 authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
 
 [dependencies]
-rand = "*"
+rand = "0.3"
+time = "0.1"

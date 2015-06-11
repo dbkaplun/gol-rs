@@ -33,6 +33,7 @@ pub struct Grid {
 }
 
 impl Grid {
+    #[inline]
     fn cell_at(&self, x: usize, y: usize) -> &Cell {
         &self.cells[y * self.width + x]
     }
@@ -188,17 +189,13 @@ impl World {
             for cell_offset in &offsets {
 
                 if *row_offset == 0 && *cell_offset == 0 {
-                    continue; //Don't count "current" cell_index
+                    continue; //Don't count "current" cell
                 }
 
                 let row_index = offset_in_dim(h, row_index, row_offset);
                 let cell_index = offset_in_dim(w, cell_index, cell_offset);
 
-                let neighbour_is_alive = 
-                    self.state.cells[row_index * w + cell_index]
-                        .is_live();
-
-                if neighbour_is_alive {
+                if self.state.cell_at(cell_index, row_index).is_live() {
                     neighbours += 1;
                 }
             }
@@ -213,19 +210,17 @@ impl World {
         let w = self.width();
         let h = self.height();
         
-        let neighbours =
-            offsets.iter()
-                    .flat_map(|x| offsets.iter().map(move |y| (x, y)))
-                    .filter(|&(x, y)| !(*x == 0 && *y == 0))
-                    .map(|(x, y)| {
-                        let row = offset_in_dim(h, row_index, y);
-                        let cell = offset_in_dim(w, cell_index, x);
-                        self.state.cell_at(cell, row)
-                    })
-                    .filter(|cell| cell.is_live())
-                    .count();
-
-        neighbours
+        offsets
+            .iter()
+            .flat_map(|xo| offsets.iter().map(move |yo| (xo, yo)))
+            .filter(|&(xo, yo)| !(*xo == 0 && *yo == 0))
+            .map(|(xo, yo)| {
+                let row = offset_in_dim(h, row_index, yo);
+                let cell = offset_in_dim(w, cell_index, xo);
+                self.state.cell_at(cell, row)
+            })
+            .filter(|cell| cell.is_live())
+            .count()
     }
 
     /*
