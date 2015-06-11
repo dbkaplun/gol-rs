@@ -46,3 +46,28 @@ fn main() {
         thread::sleep_ms(50);
     }
 }
+
+
+    /*
+    #[bench]
+    fn find_neighbours_1(b: &mut Bencher) {
+        
+        let mut rng = make_rng();
+        let w = World::new(Grid::create_random(&mut rng, 1000, 1000));
+
+        b.iter(|| { 
+            w.find_neighbours(500, 500);
+        });
+    }
+
+    #[bench]
+    fn find_neighbours_2(b: &mut Bencher) {
+        
+        let mut rng = make_rng();
+        let w = World::new(Grid::create_random(&mut rng, 1000, 1000));
+
+        b.iter(|| { 
+            w.find_neighbours2(500, 500); 
+        });
+    }
+    */
