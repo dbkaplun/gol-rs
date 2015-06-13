@@ -1,5 +1,7 @@
 extern crate rand;
 
+pub mod plaintext;
+
 use std::vec::Vec;
 use std::iter::Iterator;
 use std::option::Option;
