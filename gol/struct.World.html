@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `World` struct in crate `gol`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, World">
+
+    <title>gol::World - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='index.html'>gol</a></p><script>window.sidebarCurrent = {name: 'World', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>gol</a>::<wbr><a class='struct' href=''>World</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-2182' href='../src/gol/lib.rs.html#154-157'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct World {
+    // some fields omitted
+}</pre><div class='docblock'><p>Represents a Game of Life Grid + generation</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl <a class='struct' href='../gol/struct.World.html' title='gol::World'>World</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.new' class='fnname'>new</a>(grid: <a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a>) -&gt; <a class='struct' href='../gol/struct.World.html' title='gol::World'>World</a></code></h4>
+<div class='docblock'><p>Constructs a new <code>World</code> with the given <code>Grid</code></p>
+</div><h4 id='method.generation' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.generation' class='fnname'>generation</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></h4>
+<div class='docblock'><p>Gets the current generation for this <code>World</code></p>
+</div><h4 id='method.width' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.width' class='fnname'>width</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Gets the width of this <code>World</code></p>
+</div><h4 id='method.height' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.height' class='fnname'>height</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<div class='docblock'><p>Gets the height of this <code>World</code></p>
+</div><h4 id='method.step_mut' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.step_mut' class='fnname'>step_mut</a>(&amp;mut self)</code></h4>
+<div class='docblock'><p>Executes a single step of this <code>World</code> in place</p>
+</div><h4 id='method.step' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.step' class='fnname'>step</a>(&amp;self) -&gt; <a class='struct' href='../gol/struct.World.html' title='gol::World'>World</a></code></h4>
+<div class='docblock'><p>Executes a single step of this <code>World</code>, and returns a new world</p>
+</div><h4 id='method.find_neighbours' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.find_neighbours' class='fnname'>find_neighbours</a>(&amp;self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<h4 id='method.write_cells' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a>)</code></h4>
+<div class='docblock'><p>Overwrite the cells starting at coords <code>(x, y)</code> with the data in the given <code>Grid</code></p>
+</div><h4 id='method.iter_rows' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.iter_rows' class='fnname'>iter_rows</a>(&amp;self) -&gt; <a class='struct' href='../gol/struct.RowIterator.html' title='gol::RowIterator'>RowIterator</a></code></h4>
+<div class='docblock'><p>Returns an iterator over rows in this world</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "gol";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

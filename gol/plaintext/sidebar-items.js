@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PlainText","Struct for the contents of a Plaintext format Game of Life file."]],"enum":[["Error","Represents any errors which occur during the Plaintext parsing process"]],"type":[["ParseResult","Represents the result of a Plaintext parse operation"]],"fn":[["parse_plaintext","Parses the Plaintext format from a buffered stream"]]});
