@@ -28,7 +28,7 @@ use std::iter;
 /// 
 /// | Top | Right | Bottom | Left |
 /// |-----|-------|--------|------|
-/// | 5   | 10    | 5      |      |
+/// | 5   | 10    | 5      | 10   |
 /// 
 pub struct PlainText {
     pub name: String,
