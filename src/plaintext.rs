@@ -259,3 +259,110 @@ fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, padding: &Padding) ->
     
     Grid::from_raw(width, height, cells)
 }
+
+#[cfg(test)]
+mod plaintext_tests {
+
+    use std::io;
+
+    #[test]
+    fn can_parse_simple_plaintext() {
+
+        const PLAINTEXT: &'static str = "!Name: Tumbler
+!
+! This is a comment
+.O
+O.
+";
+
+        let bytes = PLAINTEXT.to_string().into_bytes();
+        let cursor = io::Cursor::new(bytes);
+        let read = io::BufReader::new(cursor);
+
+        let result = super::parse_plaintext(read);
+
+        assert!(result.is_ok(), "Result is not Ok");
+
+        let value = result.unwrap();
+
+        assert_eq!(value.name, "Tumbler");
+        assert_eq!(value.comment, "This is a comment");
+        assert_eq!(value.data.width, 2);
+        assert_eq!(value.data.height, 2);
+    }
+
+    #[test]
+    fn can_parse_simple_plaintext_with_padding() {
+
+        const PLAINTEXT: &'static str = "!Name: Tumbler
+!Padding: 10,5
+!
+! This is a comment
+!
+.O
+O.
+";
+
+        let bytes = PLAINTEXT.to_string().into_bytes();
+        let cursor = io::Cursor::new(bytes);
+        let read = io::BufReader::new(cursor);
+
+        let result = super::parse_plaintext(read);
+
+        assert!(result.is_ok(), "Result is not Ok");
+
+        let value = result.unwrap();
+
+        assert_eq!(value.name, "Tumbler");
+        assert_eq!(value.comment, "This is a comment\n");
+        assert_eq!(value.data.width, 5 + 5 + 2);
+        assert_eq!(value.data.height, 10 + 10 + 2);
+    }
+
+    #[test]
+    fn can_exclude_comment() {
+
+        const PLAINTEXT: &'static str = "!Name: Tumbler\n.";
+
+        let bytes = PLAINTEXT.to_string().into_bytes();
+        let cursor = io::Cursor::new(bytes);
+        let read = io::BufReader::new(cursor);
+
+        let result = super::parse_plaintext(read);
+
+        assert!(result.is_ok(), "Result is not Ok");
+
+        let value = result.unwrap();
+
+        assert_eq!(value.name, "Tumbler");
+        assert_eq!(value.comment, "");
+    }
+
+    #[test]
+    fn parse_fails_when_name_missing() {
+
+        const PLAINTEXT: &'static str = ".";
+
+        let bytes = PLAINTEXT.to_string().into_bytes();
+        let cursor = io::Cursor::new(bytes);
+        let read = io::BufReader::new(cursor);
+
+        let result = super::parse_plaintext(read);
+
+        assert!(!result.is_ok(), "Result is Ok");
+    }
+
+    #[test]
+    fn parse_fails_when_invalid_chars_in_body() {
+
+        const PLAINTEXT: &'static str = "...\nOXO\n...";
+
+        let bytes = PLAINTEXT.to_string().into_bytes();
+        let cursor = io::Cursor::new(bytes);
+        let read = io::BufReader::new(cursor);
+
+        let result = super::parse_plaintext(read);
+
+        assert!(!result.is_ok(), "Result is Ok");
+    }
+}
