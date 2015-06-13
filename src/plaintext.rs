@@ -39,7 +39,12 @@ pub struct PlainText {
 
 /// Describes padding in the order `top`, `right`, `bottom`, `left`
 #[derive(PartialEq, Debug)]
-pub struct Padding(usize, usize, usize, usize);
+pub struct Padding {
+    pub top: usize,
+    pub right: usize,
+    pub bottom: usize,
+    pub left: usize,
+}
     
 macro_rules! unwrap_or {
     ( $v:expr, $otherwise:expr ) => {
@@ -51,6 +56,13 @@ macro_rules! unwrap_or {
     }
 }
 
+impl Padding {
+    /// Constructs a new instance of the Padding struct
+    pub fn new(top: usize, right: usize, bottom: usize, left: usize) -> Padding {
+        Padding { top: top, right: right, bottom: bottom, left: left }
+    }
+}
+
 impl FromStr for Padding {
     type Err = ();
     
@@ -58,15 +70,15 @@ impl FromStr for Padding {
     /// into a Padding struct
     fn from_str(s: &str) -> Result<Padding, ()> {
         let mut parts = s.split(',').map(|p| usize::from_str(p.trim()));
-        let p1 = unwrap_or!(parts.next(), return Err(()));
-        let p2 = unwrap_or!(parts.next(), p1);
-        let p3 = unwrap_or!(parts.next(), p1);
-        let p4 = unwrap_or!(parts.next(), p2);
+        let top    = unwrap_or!(parts.next(), return Err(()));
+        let right  = unwrap_or!(parts.next(), top);
+        let bottom = unwrap_or!(parts.next(), top);
+        let left   = unwrap_or!(parts.next(), right);
         //Assert no more parts
         if parts.next().is_some() {
             return Err(());
         }
-        Ok(Padding(p1, p2, p3, p4))
+        Ok(Padding::new(top, right, bottom, left))
     }
 }
 
@@ -77,35 +89,35 @@ mod padding_tests {
 
     #[test]
     fn can_parse_single_value() {
-        let expected = Ok(Padding(10, 10, 10, 10));
+        let expected = Ok(Padding::new(10, 10, 10, 10));
         let actual = Padding::from_str("10");
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn can_parse_two_values() {
-        let expected = Ok(Padding(10, 20, 10, 20));
+        let expected = Ok(Padding::new(10, 20, 10, 20));
         let actual = Padding::from_str("10,20");
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn can_parse_three_values() {
-        let expected = Ok(Padding(10, 20, 30, 20));
+        let expected = Ok(Padding::new(10, 20, 30, 20));
         let actual = Padding::from_str("10,20,30");
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn can_parse_four_values() {
-        let expected = Ok(Padding(10, 20, 30, 40));
+        let expected = Ok(Padding::new(10, 20, 30, 40));
         let actual = Padding::from_str("10,20,30,40");
         assert_eq!(expected, actual)
     }
 
     #[test]
     fn can_ignore_whitespace() {
-        let expected = Ok(Padding(10, 20, 30, 40));
+        let expected = Ok(Padding::new(10, 20, 30, 40));
         let actual = Padding::from_str(" 10 , 20 , 30 , 40 ");
         assert_eq!(expected, actual)
     }
@@ -178,7 +190,7 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
     let mut comment = String::new();
     let mut rows = Vec::new();
     let mut width = 0;
-    let mut padding = Padding(0, 0, 0, 0);
+    let mut padding = Padding::new(0, 0, 0, 0);
 
     for line in reader.lines() {
         let line = try!(line);
@@ -229,7 +241,7 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
         }
     }
 
-    let grid = pad_and_create_grid(rows, width, &padding);
+    let grid = pad_and_create_grid(rows, width, padding);
 
     Ok(PlainText {
         name: name,
@@ -238,22 +250,20 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
     })
 }
  
-fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, padding: &Padding) -> Grid {
+fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, p: Padding) -> Grid {
 
-    let Padding(t, r, b, l) = *padding;
-
-    let width = width + l + r;
-    let height = rows.len() + t + b;
+    let width = width + p.left + p.right;
+    let height = rows.len() + p.top + p.bottom;
 
     let mut cells = Vec::with_capacity(width * height);
     
-    cells.extend(iter::repeat(Dead).take(t * width));
+    cells.extend(iter::repeat(Dead).take(p.top * width));
     for row in &rows {
-        cells.extend(iter::repeat(Dead).take(l));
+        cells.extend(iter::repeat(Dead).take(p.left));
         cells.extend(row.iter().map(|c| c.clone()));
-        cells.extend(iter::repeat(Dead).take(r));
+        cells.extend(iter::repeat(Dead).take(p.right));
     }
-    cells.extend(iter::repeat(Dead).take(b * width));
+    cells.extend(iter::repeat(Dead).take(p.bottom * width));
     
     Grid::from_raw(width, height, cells)
 }

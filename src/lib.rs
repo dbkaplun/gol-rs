@@ -23,7 +23,9 @@ impl Cell {
     }
 }
 
-/// A grid of `Cell`s 
+/// An addressable grid of `Cell`s
+///
+/// Provides a number of functions for constructing, modifying and walking `Cell` grids. 
 #[derive(PartialEq, Clone)]
 pub struct Grid {
     width: usize,
@@ -213,7 +215,7 @@ impl World {
         World { gen: self.gen + 1, state: next_state }
     }
 
-    pub fn find_neighbours(&self, x: usize, y: usize) -> usize {
+    fn find_neighbours(&self, x: usize, y: usize) -> usize {
     
         let offsets = &[-1, 0, 1];
         let (w, h) = (self.width(), self.height());

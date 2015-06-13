@@ -4,7 +4,7 @@ The Game of Life in Rust
 A straightforward implementation of the Game of Life, written in Rust.
 
 This codebase is my learn-rust playground and so exercises new Rust
-features as I learn them.
+features as I encounter them.
 
 See also [gol-tcod][gol-tcod] built using the excellent [libtcod][tcod] 
 library via [tcod-rs][tcod-rs].
