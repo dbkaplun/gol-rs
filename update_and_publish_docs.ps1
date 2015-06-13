@@ -66,14 +66,14 @@ try {
     write-verbose 'Invoking cargo doc'
     exec { cargo doc --no-deps }
 
+    write-verbose 'Recreating index.html'
+    $gh_pages_index_html | out-file -enc utf8 '.\target\doc\index.html'
+
     write-verbose 'Mirroring to gh-pages directory'
     exec { 
-        robocopy /mir .\target\doc $gh_pages_path /xd .git /njh
+        robocopy /mir '.\target\doc' $gh_pages_path /xd .git /njh /ndl
         (check-exitcode)
     }
-
-    write-verbose 'Recreating index.html'
-    $gh_pages_index_html | out-file -enc utf8 (join-path $gh_pages_path "index.html")
 
     push-location $gh_pages_path
     try {
