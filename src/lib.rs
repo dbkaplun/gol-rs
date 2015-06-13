@@ -9,6 +9,106 @@ use std::fmt::{ Debug, Formatter, Error };
 
 use rand::{ Rng };
 
+/// Represents a single Cell, alive or dead
+#[derive(PartialEq, Clone, Debug)]
+pub enum Cell { Live, Dead }
+
+impl Cell {
+    pub fn is_live(&self) -> bool {
+        match self { &Cell::Live => true, _ => false }
+    }
+
+    pub fn is_dead(&self) -> bool {
+        match self { &Cell::Dead => true, _ => false }
+    }
+}
+
+/// A grid of `Cell`s 
+#[derive(PartialEq, Clone)]
+pub struct Grid {
+    width: usize,
+    height: usize,
+    cells: Vec<Cell>
+}
+
+impl Grid {
+    /// Constructs a Grid from raw components
+    pub fn from_raw(width: usize, height: usize, state: Vec<Cell>) -> Grid {
+        let count = width * height;
+
+        if count != state.len() {
+            panic!("Invalid height and width");
+        }
+
+        Grid { width: width, height: height, cells: state }
+    }
+
+    /// Constructs a Grid of `width` and `height` using a factory function.
+    pub fn from_fn<F>(width: usize, height: usize, f: F) -> Grid
+        where F: FnMut((usize, usize)) -> Cell
+    {
+        let count = width * height;
+        let cells = (0..count).map(|i| (i % width, i / width)).map(f).collect();
+        Grid { width: width, height: height, cells: cells }
+    }
+
+    /// Constructs a dead grid of `width` and `height`
+    pub fn create_dead(width: usize, height: usize) -> Grid {
+        let count = width * height;
+
+        Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
+    }
+
+    /// Constructs a random grid of `width` and `height`
+    pub fn create_random<R: Rng>(rng: &mut R, width: usize, height: usize) -> Grid {
+        let choices = [ Cell::Live, Cell::Dead ];
+        Grid::from_fn(width, height, |_| rng.choose(&choices).unwrap().clone())
+    }
+
+    /// Returns an iterator over rows in this `Grid`
+    pub fn iter_rows(&self) -> RowIterator {
+        RowIterator { grid: self, row: 0 }
+    }
+
+    /// Returns a reference to the `Cell` at the given coordinates
+    #[inline]
+    pub fn cell_at(&self, x: usize, y: usize) -> &Cell {
+        if let Some(c) = self.cells.get(y * self.width + x) {
+            c
+        }
+        else {
+            panic!("Coordinates ({}, {}) out of range", x, y)
+        }
+    }
+
+    /// Overwrites the `Cell` at the given coordinates with the given value
+    #[inline]
+    pub fn set_cell(&mut self, x: usize, y: usize, cell: Cell) {
+        if let Some(c) = self.cells.get_mut(y * self.width + x) {
+            *c = cell;
+        }
+        else {
+            panic!("Coordinates ({}, {}) out of range", x, y)
+        }
+    }
+}
+
+impl Debug for Grid {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+
+        try!(write!(f, "{}x{} grid:", self.width, self.height));
+
+        for row in (RowIterator { grid: self, row: 0 }) {
+            try!(write!(f, "\n"));
+            for cell in row {
+                try!(write!(f, "{}", if cell.is_live() { "O" } else { "." }));
+            }
+        }
+
+        Ok(())
+    }
+}
+
 type Delta = isize;
 
 /// Calculates a new index within a wrapped dimension of `dimension_size`
@@ -50,92 +150,7 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum Cell { Live, Dead }
-
-impl Cell {
-    pub fn is_live(&self) -> bool {
-        match self { &Cell::Live => true, _ => false }
-    }
-
-    pub fn is_dead(&self) -> bool {
-        match self { &Cell::Dead => true, _ => false }
-    }
-}
-
-#[derive(PartialEq, Clone)]
-pub struct Grid {
-    width: usize,
-    height: usize,
-    cells: Vec<Cell>
-}
-
-impl Grid {
-    
-    pub fn from_raw(width: usize, height: usize, state: Vec<Cell>) -> Grid {
-        let count = width * height;
-
-        if count != state.len() {
-            panic!("Invalid height and width");
-        }
-
-        Grid { width: width, height: height, cells: state }
-    }
-
-    fn from_fn<F>(width: usize, height: usize, f: F) -> Grid where F: FnMut(usize) -> Cell {
-        let count = width * height;
-        let cells = (0..count).map(f).collect();
-        Grid { width: width, height: height, cells: cells }
-    }
-
-    pub fn create_dead(width: usize, height: usize) -> Grid {
-        let count = width * height;
-
-        Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
-    }
-
-    pub fn create_random<R: Rng>(rng: &mut R, width: usize, height: usize) -> Grid {
-        let choices = [ Cell::Live, Cell::Dead ];
-        Grid::from_fn(width, height, |_| rng.choose(&choices).unwrap().clone())
-    }
-
-    #[inline]
-    fn cell_at(&self, x: usize, y: usize) -> &Cell {
-        if let Some(c) = self.cells.get(y * self.width + x) {
-            c
-        }
-        else {
-            panic!("Coordinates ({}, {}) out of range", x, y)
-        }
-    }
-
-    #[inline]
-    fn set_cell(&mut self, x: usize, y: usize, cell: Cell) {
-        if let Some(c) = self.cells.get_mut(y * self.width + x) {
-            *c = cell;
-        }
-        else {
-            panic!("Coordinates ({}, {}) out of range", x, y)
-        }
-    }
-}
-
-impl Debug for Grid {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-
-        try!(write!(f, "{}x{} grid:", self.width, self.height));
-
-        for row in (RowIterator { grid: self, row: 0 }) {
-            try!(write!(f, "\n"));
-            for cell in row {
-                try!(write!(f, "{}", if cell.is_live() { "O" } else { "." }));
-            }
-        }
-
-        Ok(())
-    }
-}
-
+/// Represents a Game of Life Grid + generation
 pub struct World {
     gen: i64,
     state: Grid
@@ -143,18 +158,22 @@ pub struct World {
 
 impl World {
 
+    /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
         World { gen: 0, state: grid }
     }
 
+    /// Gets the current generation for this `World`
     pub fn generation(&self) -> i64 {
         self.gen
     }
 
+    /// Gets the width of this `World`
     pub fn width(&self) -> usize {
         self.state.width
     }
 
+    /// Gets the height of this `World`
     pub fn height(&self) -> usize {
         self.state.height
     }
@@ -182,11 +201,13 @@ impl World {
         Grid::from_raw(w, h, new_cells)
     }
 
+    /// Executes a single step of this `World` in place
     pub fn step_mut(&mut self) {
         self.state = self.get_next_state();
         self.gen += 1;
     }
 
+    /// Executes a single step of this `World`, and returns a new world
     pub fn step(&self) -> World {
         let next_state = self.get_next_state();
         World { gen: self.gen + 1, state: next_state }
@@ -213,7 +234,7 @@ impl World {
         neighbours
     }
 
-    /// Overwrite the cells starting at coords (x, y)
+    /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
     pub fn write_cells(&mut self, x: usize, y: usize, data: &Grid) {
 
         for data_y in (0..data.height) {
@@ -229,11 +250,13 @@ impl World {
 
     }
  
+    /// Returns an iterator over rows in this world
     pub fn iter_rows(&self) -> RowIterator {
         RowIterator { grid: &self.state, row: 0 }
     }
 }
 
+/// Iterator for the rows in a `Grid`
 pub struct RowIterator<'a> {
     grid: &'a Grid,
     row: usize
@@ -255,7 +278,7 @@ impl <'a> Iterator for RowIterator<'a> {
 }
 
 #[cfg(test)]
-mod tests {
+mod gol_tests {
 
     use rand::{ SeedableRng, StdRng };
 
@@ -269,16 +292,22 @@ mod tests {
 
     #[test]
     fn can_create_grid_from_fn() {
-        
-        let grid = Grid::from_fn(10, 10, |_| Live);
 
-        assert_eq!(grid.width, 10);
-        assert_eq!(grid.height, 10);
-        assert_eq!(grid.cells.len(), 100);
+        let grid = Grid::from_fn(2, 2, |coords| match coords {
+            (0, 0) => Live,
+            (1, 0) => Dead,
+            (0, 1) => Dead,
+            (1, 1) => Live,
+             ____  => unreachable!()
+        });
 
-        for cell in &grid.cells {
-            assert_eq!(&Live, cell)
-        }
+        assert_eq!(grid.width, 2);
+        assert_eq!(grid.height, 2);
+        assert_eq!(grid.cells.len(), 4);
+        assert_eq!(grid.cells[0], Live);
+        assert_eq!(grid.cells[1], Dead);
+        assert_eq!(grid.cells[2], Dead);
+        assert_eq!(grid.cells[3], Live);
     }
 
     #[test]
@@ -312,6 +341,7 @@ mod tests {
         
         let grid = Grid::from_fn(10, 10, |_| Dead);
         let w = World::new(grid.clone());
+        assert_eq!(0, w.gen);
         assert_eq!(&grid.cells, &w.state.cells);
     }
 

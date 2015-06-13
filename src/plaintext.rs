@@ -9,6 +9,27 @@ use std::convert;
 use std::str::FromStr;
 use std::iter;
 
+/// Struct for the contents of a [Plaintext](http://conwaylife.com/wiki/Plaintext) format Game of Life file.
+///
+/// # Optional padding syntax
+///
+/// The plaintext parser also provides a `Padding` extension, e.g.:
+///
+/// ```text
+/// !Name: Example
+/// !Padding: 5,10,5
+/// !
+/// .O.
+/// O.O
+/// .O.
+/// ```  
+///
+/// Resulting in the following padding being applied to the result:
+/// 
+/// | Top | Right | Bottom | Left |
+/// |-----|-------|--------|------|
+/// | 5   | 10    | 5      |      |
+/// 
 pub struct PlainText {
     pub name: String,
     pub comment: String,
@@ -22,7 +43,7 @@ struct Padding(usize, usize, usize, usize);
 impl FromStr for Padding {
     type Err = ();
     
-    /// Parses a css-style `top[,right][,bottom][,left]` expression.
+    /// Parses a css-style `top[,right][,bottom][,left]` expression
     fn from_str(s: &str) -> Result<Padding, ()> {
         let mut parts = s.split(',').map(|p| FromStr::from_str(p.trim()));
         let p1 = match parts.next() {
@@ -114,6 +135,7 @@ mod padding_tests {
 
 }
 
+/// Represents any errors which occur during the Plaintext parsing process
 #[derive(Debug)]
 pub enum Error {
     Io(io::Error),
@@ -121,6 +143,7 @@ pub enum Error {
     Invalid
 }
 
+/// Represents the result of a Plaintext parse operation
 pub type ParseResult = result::Result<PlainText, Error>;
 
 impl convert::From<io::Error> for Error {
@@ -144,7 +167,7 @@ fn sub_string_from(source: &str, from: usize) -> Option<&str> {
     source.char_indices().nth(from).map(|(char_idx, _)| &source[char_idx..])
 }
 
-/// Parses [Plaintext](http://conwaylife.com/wiki/Plaintext) format
+/// Parses the [Plaintext](http://conwaylife.com/wiki/Plaintext) format from a buffered stream
 pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
     where R: io::BufRead
 {
