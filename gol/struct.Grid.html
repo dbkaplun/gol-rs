@@ -43,10 +43,12 @@
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>gol</a>::<wbr><a class='struct' href=''>Grid</a><wbr></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-1329' href='../src/gol/lib.rs.html#28-32'>[src]</a></span></h1>
+        </span><a id='src-1353' href='../src/gol/lib.rs.html#30-34'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Grid {
     // some fields omitted
-}</pre><div class='docblock'><p>A grid of <code>Cell</code>s</p>
+}</pre><div class='docblock'><p>An addressable grid of <code>Cell</code>s</p>
+
+<p>Provides a number of functions for constructing, modifying and walking <code>Cell</code> grids. </p>
 </div><h2 id='methods'>Methods</h2><h3 class='impl'><a class='stability Unmarked' title='No stability level'></a><code>impl <a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.from_raw' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.from_raw' class='fnname'>from_raw</a>(width: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, state: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../gol/enum.Cell.html' title='gol::Cell'>Cell</a>&gt;) -&gt; <a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a></code></h4>
 <div class='docblock'><p>Constructs a Grid from raw components</p>
 </div><h4 id='method.from_fn' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.from_fn' class='fnname'>from_fn</a>&lt;F&gt;(width: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, f: F) -&gt; <a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a> <span class='where'>where F: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>)</a>) -&gt; <a class='enum' href='../gol/enum.Cell.html' title='gol::Cell'>Cell</a></span></code></h4>

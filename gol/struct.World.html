@@ -43,7 +43,7 @@
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>gol</a>::<wbr><a class='struct' href=''>World</a><wbr></span><span class='out-of-band'><span id='render-detail'>
             <a id="collapse-all" href="#">[-]</a>&nbsp;<a id="expand-all" href="#">[+]</a>
-        </span><a id='src-2188' href='../src/gol/lib.rs.html#154-157'>[src]</a></span></h1>
+        </span><a id='src-2212' href='../src/gol/lib.rs.html#156-159'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct World {
     // some fields omitted
 }</pre><div class='docblock'><p>Represents a Game of Life Grid + generation</p>
@@ -59,8 +59,7 @@
 <div class='docblock'><p>Executes a single step of this <code>World</code> in place</p>
 </div><h4 id='method.step' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.step' class='fnname'>step</a>(&amp;self) -&gt; <a class='struct' href='../gol/struct.World.html' title='gol::World'>World</a></code></h4>
 <div class='docblock'><p>Executes a single step of this <code>World</code>, and returns a new world</p>
-</div><h4 id='method.find_neighbours' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.find_neighbours' class='fnname'>find_neighbours</a>(&amp;self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
-<h4 id='method.write_cells' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a>)</code></h4>
+</div><h4 id='method.write_cells' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../gol/struct.Grid.html' title='gol::Grid'>Grid</a>)</code></h4>
 <div class='docblock'><p>Overwrite the cells starting at coords <code>(x, y)</code> with the data in the given <code>Grid</code></p>
 </div><h4 id='method.iter_rows' class='method'><a class='stability Unmarked' title='No stability level'></a><code>fn <a href='#method.iter_rows' class='fnname'>iter_rows</a>(&amp;self) -&gt; <a class='struct' href='../gol/struct.RowIterator.html' title='gol::RowIterator'>RowIterator</a></code></h4>
 <div class='docblock'><p>Returns an iterator over rows in this world</p>

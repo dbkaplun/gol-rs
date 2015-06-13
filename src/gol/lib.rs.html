@@ -734,6 +734,8 @@
 <span id="692">692</span>
 <span id="693">693</span>
 <span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
 </pre><pre class='rust '>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
 
@@ -760,7 +762,9 @@
     }
 }
 
-<span class='doccomment'>/// A grid of `Cell`s </span>
+<span class='doccomment'>/// An addressable grid of `Cell`s</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// Provides a number of functions for constructing, modifying and walking `Cell` grids. </span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>PartialEq</span>, <span class='ident'>Clone</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Grid</span> {
     <span class='ident'>width</span>: <span class='ident'>usize</span>,
@@ -950,7 +954,7 @@
         <span class='ident'>World</span> { <span class='ident'>gen</span>: <span class='self'>self</span>.<span class='ident'>gen</span> <span class='op'>+</span> <span class='number'>1</span>, <span class='ident'>state</span>: <span class='ident'>next_state</span> }
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_neighbours</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>x</span>: <span class='ident'>usize</span>, <span class='ident'>y</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+    <span class='kw'>fn</span> <span class='ident'>find_neighbours</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>x</span>: <span class='ident'>usize</span>, <span class='ident'>y</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
     
         <span class='kw'>let</span> <span class='ident'>offsets</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span>[<span class='op'>-</span><span class='number'>1</span>, <span class='number'>0</span>, <span class='number'>1</span>];
         <span class='kw'>let</span> (<span class='ident'>w</span>, <span class='ident'>h</span>) <span class='op'>=</span> (<span class='self'>self</span>.<span class='ident'>width</span>(), <span class='self'>self</span>.<span class='ident'>height</span>());
