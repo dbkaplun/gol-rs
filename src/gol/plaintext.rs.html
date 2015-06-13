@@ -408,9 +408,16 @@
 <span id="366">366</span>
 <span id="367">367</span>
 <span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
 </pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>super</span>::{ <span class='ident'>Grid</span>, <span class='ident'>Cell</span> };
-<span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>Cell</span>::<span class='op'>*</span>;
+<span class='kw'>use</span> ::<span class='ident'>Grid</span>;
+<span class='kw'>use</span> ::<span class='ident'>Cell</span>;
+<span class='kw'>use</span> ::<span class='ident'>Cell</span>::<span class='op'>*</span>;
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>vec</span>::<span class='ident'>Vec</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>result</span>;
@@ -449,32 +456,29 @@
 
 <span class='doccomment'>/// Describes padding in the order `top`, `right`, `bottom`, `left`</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>PartialEq</span>, <span class='ident'>Debug</span>)]</span>
-<span class='kw'>struct</span> <span class='ident'>Padding</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>, <span class='ident'>usize</span>, <span class='ident'>usize</span>);
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Padding</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>, <span class='ident'>usize</span>, <span class='ident'>usize</span>);
+    
+<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>unwrap_or</span> {
+    ( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>v</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>otherwise</span>:<span class='ident'>expr</span> ) <span class='op'>=&gt;</span> {
+        <span class='kw'>match</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>v</span> {
+            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(..)) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(()),
+            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='ident'>v</span>)) <span class='op'>=&gt;</span> <span class='ident'>v</span>,
+            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>otherwise</span>,
+        }
+    }
+}
 
 <span class='kw'>impl</span> <span class='ident'>FromStr</span> <span class='kw'>for</span> <span class='ident'>Padding</span> {
     <span class='kw'>type</span> <span class='prelude-val'>Err</span> <span class='op'>=</span> ();
     
-    <span class='doccomment'>/// Parses a css-style `top[,right][,bottom][,left]` expression</span>
+    <span class='doccomment'>/// Parses a css-style `top[,right[,bottom[,left]]]` expression</span>
+    <span class='doccomment'>/// into a Padding struct</span>
     <span class='kw'>fn</span> <span class='ident'>from_str</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Padding</span>, ()<span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parts</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>split</span>(<span class='string'>&#39;,&#39;</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='ident'>p</span>.<span class='ident'>trim</span>()));
-        <span class='kw'>let</span> <span class='ident'>p1</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>parts</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>None</span> <span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(..)) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(()), <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='ident'>v</span>)) <span class='op'>=&gt;</span> <span class='ident'>v</span>,
-        };
-        <span class='kw'>let</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>parts</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(..)) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(()),
-            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='ident'>v</span>)) <span class='op'>=&gt;</span> <span class='ident'>v</span>,
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>p1</span>,
-        };
-        <span class='kw'>let</span> <span class='ident'>p3</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>parts</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(..)) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(()),
-            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='ident'>v</span>)) <span class='op'>=&gt;</span> <span class='ident'>v</span>,
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>p1</span>
-        };
-        <span class='kw'>let</span> <span class='ident'>p4</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>parts</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(..)) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(()),
-            <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='ident'>v</span>)) <span class='op'>=&gt;</span> <span class='ident'>v</span>,
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>p2</span>
-        };
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parts</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>split</span>(<span class='string'>&#39;,&#39;</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>usize</span>::<span class='ident'>from_str</span>(<span class='ident'>p</span>.<span class='ident'>trim</span>()));
+        <span class='kw'>let</span> <span class='ident'>p1</span> <span class='op'>=</span> <span class='macro'>unwrap_or</span><span class='macro'>!</span>(<span class='ident'>parts</span>.<span class='ident'>next</span>(), <span class='kw'>return</span> <span class='prelude-val'>Err</span>(()));
+        <span class='kw'>let</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='macro'>unwrap_or</span><span class='macro'>!</span>(<span class='ident'>parts</span>.<span class='ident'>next</span>(), <span class='ident'>p1</span>);
+        <span class='kw'>let</span> <span class='ident'>p3</span> <span class='op'>=</span> <span class='macro'>unwrap_or</span><span class='macro'>!</span>(<span class='ident'>parts</span>.<span class='ident'>next</span>(), <span class='ident'>p1</span>);
+        <span class='kw'>let</span> <span class='ident'>p4</span> <span class='op'>=</span> <span class='macro'>unwrap_or</span><span class='macro'>!</span>(<span class='ident'>parts</span>.<span class='ident'>next</span>(), <span class='ident'>p2</span>);
         <span class='comment'>//Assert no more parts</span>
         <span class='kw'>if</span> <span class='ident'>parts</span>.<span class='ident'>next</span>().<span class='ident'>is_some</span>() {
             <span class='kw'>return</span> <span class='prelude-val'>Err</span>(());
@@ -491,56 +495,56 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_parse_single_value</span>() {
         <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Padding</span>(<span class='number'>10</span>, <span class='number'>10</span>, <span class='number'>10</span>, <span class='number'>10</span>));
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_parse_two_values</span>() {
         <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Padding</span>(<span class='number'>10</span>, <span class='number'>20</span>, <span class='number'>10</span>, <span class='number'>20</span>));
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_parse_three_values</span>() {
         <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Padding</span>(<span class='number'>10</span>, <span class='number'>20</span>, <span class='number'>30</span>, <span class='number'>20</span>));
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20,30,20&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20,30&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>can_parse_four_value</span>() {
+    <span class='kw'>fn</span> <span class='ident'>can_parse_four_values</span>() {
         <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Padding</span>(<span class='number'>10</span>, <span class='number'>20</span>, <span class='number'>30</span>, <span class='number'>40</span>));
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20,30,40&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20,30,40&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_ignore_whitespace</span>() {
         <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Padding</span>(<span class='number'>10</span>, <span class='number'>20</span>, <span class='number'>30</span>, <span class='number'>40</span>));
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot; 10 , 20 , 30 , 40 &quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot; 10 , 20 , 30 , 40 &quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>fails_with_more_than_five_values</span>() {
-        <span class='kw'>let</span> <span class='ident'>expected</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Padding</span>, _<span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(());
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20,30,40,60&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(());
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;10,20,30,40,60&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>fails_with_no_values</span>() {
-        <span class='kw'>let</span> <span class='ident'>expected</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Padding</span>, _<span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(());
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(());
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>fails_with_invalid_value</span>() {
-        <span class='kw'>let</span> <span class='ident'>expected</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Padding</span>, _<span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(());
-        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>FromStr</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;1,this isn&#39;t an int&quot;</span>);
+        <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(());
+        <span class='kw'>let</span> <span class='ident'>actual</span> <span class='op'>=</span> <span class='ident'>Padding</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;1,this isn&#39;t an int&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected</span>, <span class='ident'>actual</span>)
     }
 
@@ -629,7 +633,7 @@
                 <span class='kw'>match</span> <span class='ident'>c</span> {
                     <span class='string'>&#39;O&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>row</span>.<span class='ident'>push</span>(<span class='ident'>Live</span>),
                     <span class='string'>&#39;.&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>row</span>.<span class='ident'>push</span>(<span class='ident'>Dead</span>),
-                     _  <span class='op'>=&gt;</span> (),
+                     _  <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>Invalid</span>),
                 }
             }
             <span class='kw'>if</span> <span class='ident'>rows</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>0</span> {
@@ -675,6 +679,7 @@
 <span class='kw'>mod</span> <span class='ident'>plaintext_tests</span> {
 
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
+    <span class='kw'>use</span> ::<span class='ident'>Cell</span>::{ <span class='ident'>Live</span>, <span class='ident'>Dead</span> };
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_parse_simple_plaintext</span>() {
@@ -700,13 +705,14 @@ O.
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>comment</span>, <span class='string'>&quot;This is a comment&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>width</span>, <span class='number'>2</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>height</span>, <span class='number'>2</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>cells</span>, <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Dead</span>, <span class='ident'>Live</span>, <span class='ident'>Live</span>, <span class='ident'>Dead</span>]);
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_parse_simple_plaintext_with_padding</span>() {
 
         <span class='kw'>const</span> <span class='ident'>PLAINTEXT</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;!Name: Tumbler
-!Padding: 10,5
+!Padding: 1,2
 !
 ! This is a comment
 !
@@ -726,8 +732,14 @@ O.
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>name</span>, <span class='string'>&quot;Tumbler&quot;</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>comment</span>, <span class='string'>&quot;This is a comment\n&quot;</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>width</span>, <span class='number'>5</span> <span class='op'>+</span> <span class='number'>5</span> <span class='op'>+</span> <span class='number'>2</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>height</span>, <span class='number'>10</span> <span class='op'>+</span> <span class='number'>10</span> <span class='op'>+</span> <span class='number'>2</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>width</span>, <span class='number'>4</span> <span class='op'>+</span> <span class='number'>2</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>height</span>, <span class='number'>2</span> <span class='op'>+</span> <span class='number'>2</span>);
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>value</span>.<span class='ident'>data</span>.<span class='ident'>cells</span>, <span class='macro'>vec</span><span class='macro'>!</span>[
+            <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>,
+            <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Live</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>,
+            <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Live</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>,
+            <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>, <span class='ident'>Dead</span>,
+        ]);
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -766,7 +778,7 @@ O.
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>parse_fails_when_invalid_chars_in_body</span>() {
 
-        <span class='kw'>const</span> <span class='ident'>PLAINTEXT</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;...\nOXO\n...&quot;</span>;
+        <span class='kw'>const</span> <span class='ident'>PLAINTEXT</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> <span class='op'>=</span> <span class='string'>&quot;...\nOzO\n...&quot;</span>;
 
         <span class='kw'>let</span> <span class='ident'>bytes</span> <span class='op'>=</span> <span class='ident'>PLAINTEXT</span>.<span class='ident'>to_string</span>().<span class='ident'>into_bytes</span>();
         <span class='kw'>let</span> <span class='ident'>cursor</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>Cursor</span>::<span class='ident'>new</span>(<span class='ident'>bytes</span>);
