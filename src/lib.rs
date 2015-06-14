@@ -67,19 +67,22 @@ impl Grid {
         Grid::from_fn(width, height, |_| rng.choose(&choices).unwrap().clone())
     }
 
-    /// Returns an iterator over rows in this `Grid`
-    pub fn iter_rows(&self) -> RowIterator {
-        RowIterator { grid: self, row: 0 }
+    /// Gets the width of this `Grid`
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    /// Gets the height of this `Grid`
+    pub fn height(&self) -> usize {
+        self.height
     }
 
     /// Returns a reference to the `Cell` at the given coordinates
     #[inline]
     pub fn cell_at(&self, x: usize, y: usize) -> &Cell {
-        if let Some(c) = self.cells.get(y * self.width + x) {
-            c
-        }
-        else {
-            panic!("Coordinates ({}, {}) out of range", x, y)
+        match self.cells.get(y * self.width + x) {
+            Some(c) => c,
+            None    => panic!("Coordinates ({}, {}) out of range", x, y),
         }
     }
 
@@ -92,6 +95,11 @@ impl Grid {
         else {
             panic!("Coordinates ({}, {}) out of range", x, y)
         }
+    }
+
+    /// Returns an iterator over rows in this `Grid`
+    pub fn iter_rows(&self) -> RowIterator {
+        RowIterator { grid: self, row: 0 }
     }
 }
 
