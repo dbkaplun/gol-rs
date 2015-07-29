@@ -29,16 +29,19 @@ impl World {
     }
 
     /// Gets the current generation for this `World`
+    #[inline]
     pub fn generation(&self) -> i64 {
         self.gen
     }
 
     /// Gets the width of this `World`
+    #[inline]
     pub fn width(&self) -> usize {
         self.state.width()
     }
 
     /// Gets the height of this `World`
+    #[inline]
     pub fn height(&self) -> usize {
         self.state.height()
     }

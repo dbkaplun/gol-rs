@@ -64,11 +64,13 @@ impl Grid {
     }
 
     /// Gets the width of this `Grid`
+    #[inline]
     pub fn width(&self) -> usize {
         self.width
     }
 
     /// Gets the height of this `Grid`
+    #[inline]
     pub fn height(&self) -> usize {
         self.height
     }
