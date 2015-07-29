@@ -9,8 +9,9 @@ use std::process::{ exit };
 
 use rand::{ Rng, thread_rng };
 
-use gol::{ Grid, World, Cell };
-use gol::Cell::{ Live, Dead };
+use gol::grid::{ Grid, Cell };
+use gol::grid::Cell::{ Live, Dead };
+use gol::world::World;
 
 #[cfg(not(test))]
 fn main() {

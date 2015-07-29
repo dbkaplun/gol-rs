@@ -1,6 +1,5 @@
-use ::Grid;
-use ::Cell;
-use ::Cell::*;
+use grid::{ Cell, Grid };
+use grid::Cell::*;
 
 use std::vec::Vec;
 use std::result;
@@ -272,7 +271,7 @@ fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, p: Padding) -> Grid {
 mod plaintext_tests {
 
     use std::io;
-    use ::Cell::{ Live, Dead };
+    use grid::Cell::{ Live, Dead };
 
     #[test]
     fn can_parse_simple_plaintext() {
@@ -296,9 +295,17 @@ O.
 
         assert_eq!(value.name, "Tumbler");
         assert_eq!(value.comment, "This is a comment");
-        assert_eq!(value.data.width, 2);
-        assert_eq!(value.data.height, 2);
-        assert_eq!(value.data.cells, vec![Dead, Live, Live, Dead]);
+        assert_eq!(value.data.width(), 2);
+        assert_eq!(value.data.height(), 2);
+        
+        let expected = vec![
+            Dead, Live,
+            Live, Dead
+        ];
+        
+        for (left, right) in value.data.iter_cells().zip(expected) {
+            assert_eq!(left.2, &right)
+        }
     }
 
     #[test]
@@ -325,14 +332,19 @@ O.
 
         assert_eq!(value.name, "Tumbler");
         assert_eq!(value.comment, "This is a comment\n");
-        assert_eq!(value.data.width, 4 + 2);
-        assert_eq!(value.data.height, 2 + 2);
-        assert_eq!(value.data.cells, vec![
+        assert_eq!(value.data.width(), 4 + 2);
+        assert_eq!(value.data.height(), 2 + 2);
+        
+        let expected = vec![
             Dead, Dead, Dead, Dead, Dead, Dead,
             Dead, Dead, Dead, Live, Dead, Dead,
             Dead, Dead, Live, Dead, Dead, Dead,
             Dead, Dead, Dead, Dead, Dead, Dead,
-        ]);
+        ];
+        
+        for (left, right) in value.data.iter_cells().zip(expected) {
+            assert_eq!(left.2, &right)
+        }
     }
 
     #[test]
