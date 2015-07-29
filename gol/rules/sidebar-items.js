@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["standard_rules","Implements the standard rules of the Game of Life"]]});

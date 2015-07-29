@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Grid","An addressable grid of `Cell`s"],["RowIterator","Iterator for the rows in a `Grid`"],["World","Represents a Game of Life Grid + generation"]],"mod":[["plaintext",""]],"enum":[["Cell","Represents a single Cell, alive or dead"]]});
+initSidebarItems({"mod":[["grid",""],["plaintext",""],["rules",""],["world",""]]});

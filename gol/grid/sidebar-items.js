@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Cell","Represents a single Cell, alive or dead"]],"struct":[["CellIter","Iterator for the cells in a `Grid`"],["Grid","An addressable grid of `Cell`s"],["RowIter","Iterator for the rows in a `Grid`"]]});

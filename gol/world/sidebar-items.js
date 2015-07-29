@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["World","Contains a Game of Life grid, ruleset and generation. Includes functions for modifying the world and stepping the simulation "]],"type":[["RulesFn",""]]});
