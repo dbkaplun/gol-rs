@@ -13,21 +13,20 @@ pub type RulesFn = fn(&Cell, usize) -> Cell;
 pub struct World {
     gen: i64,
     rules: RulesFn,
-    
     state: Grid,
-    prev: Grid,
+    prev: Option<Grid>,
 }
 
 impl World {
 
     /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
-        World { gen: 0, rules: rules::standard_rules, state: grid.clone(), prev: grid  }
+        World { gen: 0, rules: rules::standard_rules, state: grid, prev: None  }
     }
 
     /// Constructs a new `World` with the given `Grid` and `RulesFn`
     pub fn new_with_rules(grid: Grid, rules: RulesFn) -> World {
-        World { gen: 0, rules: rules, state: grid.clone(), prev: grid }
+        World { gen: 0, rules: rules, state: grid, prev: None }
     }
 
     /// Gets the current generation for this `World`
@@ -51,18 +50,21 @@ impl World {
     /// Executes a single step of this `World` in place
     pub fn step_mut(&mut self) {
         use std::mem::swap;
-        {
-            let curr = &self.state;
-            let next = &mut self.prev;
-            // Generate the next world state from the current
-            for (x, y, cell) in curr.iter_cells() {
-                let neighbours = curr.count_neighbours(x, y);
-                let new_cell = (self.rules)(&cell, neighbours);
-                next.set_cell(x, y, new_cell);
-            }
+        // Allocate prev?
+        if self.prev.is_none() {
+            let (w, h) = (self.width(), self.height());
+            self.prev = Some(Grid::create_dead(w, h));
         }
-        // ...and swap the two states
-        swap(&mut self.state, &mut self.prev);
+        let curr = &mut self.state;
+        let next = self.prev.as_mut().unwrap();
+        // Generate the next world state from the current
+        for (x, y, cell) in curr.iter_cells() {
+            let neighbours = curr.count_neighbours(x, y);
+            let new_cell = (self.rules)(&cell, neighbours);
+            next.set_cell(x, y, new_cell);
+        }
+        // ...and swap the two values
+        swap(curr, next);
         self.gen += 1;
     }
 
@@ -81,7 +83,7 @@ impl World {
         let next = Grid::from_raw(self.width(), self.height(), next);
         World { gen: self.gen + 1, rules: self.rules,
                 state: next,
-                prev: self.state.clone() }
+                prev: None }
     }
 
     /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
