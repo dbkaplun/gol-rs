@@ -76,7 +76,7 @@ impl Grid {
     pub fn height(&self) -> usize {
         self.height
     }
-
+    
     /// Returns a reference to the `Cell` at the given coordinates
     #[inline]
     pub fn cell_at(&self, x: usize, y: usize) -> &Cell {
@@ -101,6 +101,44 @@ impl Grid {
     pub fn iter_rows(&self) -> RowIterator {
         RowIterator { grid: self, row: 0 }
     }
+}
+
+fn count_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
+
+    let offsets = &[-1, 0, 1];
+    let (w, h) = (grid.width(), grid.height());
+    
+    offsets
+        .iter()
+        .flat_map(|x_off| offsets.iter().map(move |y_off| (*x_off, *y_off)))
+        .filter(|&offset| offset != (0, 0))
+        .map(|(x_off, y_off)| {
+            let y = offset_in_dim(h, y, y_off);
+            let x = offset_in_dim(w, x, x_off);
+            grid.cell_at(x, y)
+        })
+        .filter(|cell| cell.is_live())
+        .count()
+}
+
+/// Calculates the next state of the given cell
+fn get_next_state(cell: &Cell, neighbours: usize) -> Cell {
+    match (cell, neighbours) {
+        (&Cell::Live, 3) |
+        (&Cell::Live, 2) |
+        (&Cell::Dead, 3) => Cell::Live,
+        ________________ => Cell::Dead
+    }
+}
+
+/// Calculates the X-coordinate of the given index
+fn x_from_index(grid: &Grid, index: usize) -> usize {
+    index % grid.width 
+}
+
+/// Calculates the X-coordinate of the given index
+fn y_from_index(grid: &Grid, index: usize) -> usize {
+    index / grid.width
 }
 
 impl Debug for Grid {
@@ -155,7 +193,7 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
             }
         },
         _ => {
-            panic!(print!("Unexpected delta: {}", delta))
+            panic!(format!("Unexpected delta: {}", delta))
         }
     }
 }
@@ -188,60 +226,35 @@ impl World {
         self.state.height
     }
 
-    fn get_next_state(&self) -> Grid {
-        // Generate the next world state from the current
-        let w = self.state.width;
-        let h = self.state.height;
-
-        let new_cells = self.state.cells.iter().enumerate().map(|(index, cell)| {
-            let y = index / w;
-            let x = index % w;
-
-            let neighbours = self.find_neighbours(x, y);
-
-            match (cell, neighbours) {
-                (&Cell::Live, 3) |
-                (&Cell::Live, 2) |
-                (&Cell::Dead, 3) => Cell::Live,
-                ________________ => Cell::Dead
-            }
-        })
-        .collect();
-
-        Grid::from_raw(w, h, new_cells)
-    }
-
     /// Executes a single step of this `World` in place
     pub fn step_mut(&mut self) {
-        self.state = self.get_next_state();
+        let prev = self.state.clone();
+        // Generate the next world state from the prev
+        for (index, cell) in self.state.cells.iter_mut().enumerate() {
+            let y = y_from_index(&prev, index);
+            let x = x_from_index(&prev, index);
+            let neighbours = count_neighbours(&prev, x, y);
+            *cell = get_next_state(&cell, neighbours);
+        }
         self.gen += 1;
     }
 
-    /// Executes a single step of this `World`, and returns a new world
+    /// Executes a single step of this `World` and returns a new, modified world
     pub fn step(&self) -> World {
-        let next_state = self.get_next_state();
-        World { gen: self.gen + 1, state: next_state }
-    }
-
-    fn find_neighbours(&self, x: usize, y: usize) -> usize {
-    
-        let offsets = &[-1, 0, 1];
-        let (w, h) = (self.width(), self.height());
+        // Generate the next world state from the current
+        let next_state =
+            self.state.cells
+                .iter().enumerate()
+                .map(|(index, cell)| {
+                    let y = y_from_index(&self.state, index);
+                    let x = x_from_index(&self.state, index);
+                    let neighbours = count_neighbours(&self.state, x, y);
+                    get_next_state(cell, neighbours)
+                })
+                .collect();
         
-        let neighbours = 
-            offsets
-            .iter()
-            .flat_map(|x_offset| offsets.iter().map(move |y_offset| (*x_offset, *y_offset)))
-            .filter(|&offset| offset != (0, 0))
-            .map(|(x_offset, y_offset)| {
-                let y = offset_in_dim(h, y, y_offset);
-                let x = offset_in_dim(w, x, x_offset);
-                self.state.cell_at(x, y)
-            })
-            .filter(|cell| cell.is_live())
-            .count();
-
-        neighbours
+        let next_state = Grid::from_raw(self.width(), self.height(), next_state);
+        World { gen: self.gen + 1, state: next_state }
     }
 
     /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
@@ -438,7 +451,7 @@ mod gol_tests {
 
         let w = make_square_world();
 
-        let neighbours = w.find_neighbours(1, 1);
+        let neighbours = super::count_neighbours(&w.state, 1, 1);
 
         assert_eq!(neighbours, 8);
     }
@@ -448,7 +461,7 @@ mod gol_tests {
 
         let w = make_pipe_world();
 
-        let neighbours = w.find_neighbours(2, 1);
+        let neighbours = super::count_neighbours(&w.state, 2, 1);
 
         assert_eq!(neighbours, 3);
     }
@@ -458,7 +471,7 @@ mod gol_tests {
 
         let w = make_pipe_world();
 
-        let neighbours = w.find_neighbours(0, 1);
+        let neighbours = super::count_neighbours(&w.state, 0, 1);
 
         assert_eq!(neighbours, 3);
     }
@@ -468,7 +481,7 @@ mod gol_tests {
 
         let w = make_lonely_world();
 
-        let neighbours = w.find_neighbours(1, 1);
+        let neighbours = super::count_neighbours(&w.state, 1, 1);
 
         assert_eq!(neighbours, 0);
     }
@@ -477,7 +490,7 @@ mod gol_tests {
     fn can_count_neighbours_on_oblong_world() {
         let w = make_oblong_world();
 
-        let neighbours = w.find_neighbours(2, 1);
+        let neighbours = super::count_neighbours(&w.state, 2, 1);
 
         assert_eq!(neighbours, 4);
     }
@@ -486,7 +499,7 @@ mod gol_tests {
     fn can_count_neighbours_at_bottom_right_of_oblong_world() {
         let w = make_oblong_world();
 
-        let neighbours = w.find_neighbours(4, 2);
+        let neighbours = super::count_neighbours(&w.state, 4, 2);
 
         assert_eq!(neighbours, 1);
     }
@@ -495,7 +508,7 @@ mod gol_tests {
     fn can_count_neighbours_at_top_left_of_oblong_world() {
         let w = make_oblong_world();
 
-        let neighbours = w.find_neighbours(0, 0);
+        let neighbours = super::count_neighbours(&w.state, 0, 0);
 
         assert_eq!(neighbours, 1);
     }
