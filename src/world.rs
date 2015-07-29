@@ -12,20 +12,22 @@ pub type RulesFn = fn(&Cell, usize) -> Cell;
 /// Represents a Game of Life Grid + generation
 pub struct World {
     gen: i64,
-    state: Grid,
     rules: RulesFn,
+    
+    state: Grid,
+    prev: Grid,
 }
 
 impl World {
 
     /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
-        World { gen: 0, state: grid, rules: rules::standard_rules }
+        World { gen: 0, rules: rules::standard_rules, state: grid.clone(), prev: grid  }
     }
 
     /// Constructs a new `World` with the given `Grid` and `RulesFn`
     pub fn new_with_rules(grid: Grid, rules: RulesFn) -> World {
-        World { gen: 0, state: grid, rules: rules }
+        World { gen: 0, rules: rules, state: grid.clone(), prev: grid }
     }
 
     /// Gets the current generation for this `World`
@@ -48,20 +50,26 @@ impl World {
 
     /// Executes a single step of this `World` in place
     pub fn step_mut(&mut self) {
-        let prev = self.state.clone();
-        // Generate the next world state from the prev
-        for (x, y, cell) in prev.iter_cells() {
-            let neighbours = prev.count_neighbours(x, y);
-            let new_cell = (self.rules)(&cell, neighbours);
-            self.state.set_cell(x, y, new_cell);
+        use std::mem::swap;
+        {
+            let curr = &self.state;
+            let next = &mut self.prev;
+            // Generate the next world state from the current
+            for (x, y, cell) in curr.iter_cells() {
+                let neighbours = curr.count_neighbours(x, y);
+                let new_cell = (self.rules)(&cell, neighbours);
+                next.set_cell(x, y, new_cell);
+            }
         }
+        // ...and swap the two states
+        swap(&mut self.state, &mut self.prev);
         self.gen += 1;
     }
 
     /// Executes a single step of this `World` and returns a new, modified world
     pub fn step(&self) -> World {
         // Generate the next world state from the current
-        let next_state =
+        let next =
             self.state
                 .iter_cells()
                 .map(|(x, y, cell)| {
@@ -70,8 +78,10 @@ impl World {
                 })
                 .collect();
 
-        let next_state = Grid::from_raw(self.width(), self.height(), next_state);
-        World { gen: self.gen + 1, state: next_state, rules: self.rules }
+        let next = Grid::from_raw(self.width(), self.height(), next);
+        World { gen: self.gen + 1, rules: self.rules,
+                state: next,
+                prev: self.state.clone() }
     }
 
     /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
