@@ -1,6 +1,7 @@
 extern crate rand;
 
 pub mod plaintext;
+pub mod rules;
 
 use std::vec::Vec;
 use std::iter::Iterator;
@@ -121,16 +122,6 @@ fn count_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
         .count()
 }
 
-/// Calculates the next state of the given cell
-fn get_next_state(cell: &Cell, neighbours: usize) -> Cell {
-    match (cell, neighbours) {
-        (&Cell::Live, 3) |
-        (&Cell::Live, 2) |
-        (&Cell::Dead, 3) => Cell::Live,
-        ________________ => Cell::Dead
-    }
-}
-
 /// Calculates the X-coordinate of the given index
 fn x_from_index(grid: &Grid, index: usize) -> usize {
     index % grid.width 
@@ -198,17 +189,25 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
     }
 }
 
+pub type RulesFn = fn(&Cell, usize) -> Cell; 
+
 /// Represents a Game of Life Grid + generation
 pub struct World {
     gen: i64,
-    state: Grid
+    state: Grid,
+    rules: RulesFn,
 }
 
 impl World {
 
     /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
-        World { gen: 0, state: grid }
+        World { gen: 0, state: grid, rules: rules::standard_rules }
+    }
+
+    /// Constructs a new `World` with the given `Grid` and `RulesFn`
+    pub fn new_with_rules(grid: Grid, rules: RulesFn) -> World {
+        World { gen: 0, state: grid, rules: rules }
     }
 
     /// Gets the current generation for this `World`
@@ -234,7 +233,7 @@ impl World {
             let y = y_from_index(&prev, index);
             let x = x_from_index(&prev, index);
             let neighbours = count_neighbours(&prev, x, y);
-            *cell = get_next_state(&cell, neighbours);
+            *cell = (self.rules)(&cell, neighbours);
         }
         self.gen += 1;
     }
@@ -249,12 +248,12 @@ impl World {
                     let y = y_from_index(&self.state, index);
                     let x = x_from_index(&self.state, index);
                     let neighbours = count_neighbours(&self.state, x, y);
-                    get_next_state(cell, neighbours)
+                    (self.rules)(cell, neighbours)
                 })
                 .collect();
         
         let next_state = Grid::from_raw(self.width(), self.height(), next_state);
-        World { gen: self.gen + 1, state: next_state }
+        World { gen: self.gen + 1, state: next_state, rules: self.rules }
     }
 
     /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
