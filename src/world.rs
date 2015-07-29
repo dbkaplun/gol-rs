@@ -9,7 +9,8 @@ use rules;
 
 pub type RulesFn = fn(&Cell, usize) -> Cell;
 
-/// Represents a Game of Life Grid + generation
+/// Contains a Game of Life grid, ruleset and generation. Includes functions for modifying
+/// the world and stepping the simulation 
 pub struct World {
     gen: i64,
     rules: RulesFn,

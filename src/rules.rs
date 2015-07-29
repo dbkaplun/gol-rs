@@ -1,7 +1,6 @@
 use grid::{ Cell };
 
-/// Standard Game of Life rules
-/// Calculates the next state of the given cell
+/// Implements the standard rules of the Game of Life
 pub fn standard_rules(cell: &Cell, neighbours: usize) -> Cell {
     match (cell, neighbours) {
         (&Cell::Live, 3) |
