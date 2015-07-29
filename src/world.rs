@@ -13,7 +13,7 @@ pub type RulesFn = fn(&Cell, usize) -> Cell;
 pub struct World {
     gen: i64,
     rules: RulesFn,
-    state: Grid,
+    curr: Grid,
     prev: Option<Grid>,
 }
 
@@ -21,12 +21,12 @@ impl World {
 
     /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
-        World { gen: 0, rules: rules::standard_rules, state: grid, prev: None  }
+        World { gen: 0, rules: rules::standard_rules, curr: grid, prev: None  }
     }
 
     /// Constructs a new `World` with the given `Grid` and `RulesFn`
     pub fn new_with_rules(grid: Grid, rules: RulesFn) -> World {
-        World { gen: 0, rules: rules, state: grid, prev: None }
+        World { gen: 0, rules: rules, curr: grid, prev: None }
     }
 
     /// Gets the current generation for this `World`
@@ -38,13 +38,13 @@ impl World {
     /// Gets the width of this `World`
     #[inline]
     pub fn width(&self) -> usize {
-        self.state.width()
+        self.curr.width()
     }
 
     /// Gets the height of this `World`
     #[inline]
     pub fn height(&self) -> usize {
-        self.state.height()
+        self.curr.height()
     }
 
     /// Executes a single step of this `World` in place
@@ -55,7 +55,7 @@ impl World {
             let (w, h) = (self.width(), self.height());
             self.prev = Some(Grid::create_dead(w, h));
         }
-        let curr = &mut self.state;
+        let curr = &mut self.curr;
         let next = self.prev.as_mut().unwrap();
         // Generate the next world state from the current
         for (x, y, cell) in curr.iter_cells() {
@@ -72,28 +72,28 @@ impl World {
     pub fn step(&self) -> World {
         // Generate the next world state from the current
         let next =
-            self.state
+            self.curr
                 .iter_cells()
                 .map(|(x, y, cell)| {
-                    let neighbours = self.state.count_neighbours(x, y);
+                    let neighbours = self.curr.count_neighbours(x, y);
                     (self.rules)(cell, neighbours)
                 })
                 .collect();
 
         let next = Grid::from_raw(self.width(), self.height(), next);
         World { gen: self.gen + 1, rules: self.rules,
-                state: next,
+                curr: next,
                 prev: None }
     }
 
     /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
     pub fn write_cells(&mut self, x: usize, y: usize, data: &Grid) {
-        self.state.write_cells(x, y, data);
+        self.curr.write_cells(x, y, data);
     }
 
     /// Returns an iterator over rows in this world
     pub fn iter_rows(&self) -> grid::RowIter {
-        self.state.iter_rows()
+        self.curr.iter_rows()
     }
 }
 
@@ -132,7 +132,7 @@ mod tests {
         let grid = Grid::from_fn(10, 10, |_| Dead);
         let w = World::new(grid.clone());
         assert_eq!(0, w.gen);
-        assert_eq!(&grid, &w.state);
+        assert_eq!(&grid, &w.curr);
     }
 
     #[test]
@@ -151,7 +151,7 @@ mod tests {
             X, X, X, X,
         ]);
 
-        assert_eq!(&w.state, &expected);
+        assert_eq!(&w.curr, &expected);
     }
 
     #[test]
@@ -170,7 +170,7 @@ mod tests {
             X, X, X, X,
         ]);
 
-        assert_eq!(&w2.state, &expected);
+        assert_eq!(&w2.curr, &expected);
     }
 
 
@@ -209,7 +209,7 @@ mod tests {
             X, X, X, X, X, X,
         ]);
 
-        assert_eq!(&w.state, &expected);
+        assert_eq!(&w.curr, &expected);
     }
 
     #[test]
@@ -229,7 +229,7 @@ mod tests {
             X, X, X,
         ]);
 
-        assert_eq!(&w.state, &expected);
+        assert_eq!(&w.curr, &expected);
     }
 
     #[test]
@@ -293,7 +293,7 @@ mod tests {
         let mut w = make_lonely_world();
         w.write_cells(0, 0, &new_data);
 
-        assert_eq!(&w.state, &new_data);
+        assert_eq!(&w.curr, &new_data);
 
         //write from bottom right
         let mut w = make_lonely_world();
@@ -304,7 +304,7 @@ mod tests {
             O, O, O,
             O, O, O,
         ]);
-        assert_eq!(&w.state, expected);
+        assert_eq!(&w.curr, expected);
 
     }
 }
