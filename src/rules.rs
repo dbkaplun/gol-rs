@@ -1,4 +1,4 @@
-use super::{ Cell };
+use grid::{ Cell };
 
 /// Standard Game of Life rules
 /// Calculates the next state of the given cell
