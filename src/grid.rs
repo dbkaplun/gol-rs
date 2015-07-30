@@ -44,11 +44,11 @@ impl Grid {
     }
 
     /// Constructs a Grid of `width` and `height` using a factory function.
-    pub fn from_fn<F>(width: usize, height: usize, f: F) -> Grid
-        where F: FnMut((usize, usize)) -> Cell
+    pub fn from_fn<F>(width: usize, height: usize, mut f: F) -> Grid
+        where F: FnMut(usize, usize) -> Cell
     {
         let count = width * height;
-        let cells = (0..count).map(|i| (i % width, i / width)).map(f).collect();
+        let cells = (0..count).map(|i| f(i % width, i / width)).collect();
         Grid { width: width, height: height, cells: cells }
     }
 
@@ -62,7 +62,7 @@ impl Grid {
     /// Constructs a random grid of `width` and `height`
     pub fn create_random<R: Rng>(rng: &mut R, width: usize, height: usize) -> Grid {
         let choices = [ Cell::Live, Cell::Dead ];
-        Grid::from_fn(width, height, |_| rng.choose(&choices).unwrap().clone())
+        Grid::from_fn(width, height, |_, _| rng.choose(&choices).unwrap().clone())
     }
 
     /// Gets the width of this `Grid`
@@ -329,12 +329,14 @@ pub mod tests {
     #[test]
     fn can_create_grid_from_fn() {
 
-        let grid = Grid::from_fn(2, 2, |coords| match coords {
-            (0, 0) => Live,
-            (1, 0) => Dead,
-            (0, 1) => Dead,
-            (1, 1) => Live,
-             ____  => unreachable!()
+        let grid = Grid::from_fn(2, 2, |x, y| {
+             match (x, y) {
+                (0, 0) => Live,
+                (1, 0) => Dead,
+                (0, 1) => Dead,
+                (1, 1) => Live,
+                 ____  => unreachable!()
+            }
         });
 
         assert_eq!(grid.width, 2);

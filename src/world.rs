@@ -103,6 +103,7 @@ impl World {
 #[cfg(test)]
 mod tests {
 
+    use rules;
     use world::World;
     use grid::{ Grid };
     use grid::Cell::{ Live, Dead };
@@ -132,7 +133,7 @@ mod tests {
     #[test]
     fn can_create_world_with_grid() {
 
-        let grid = Grid::from_fn(10, 10, |_| Dead);
+        let grid = Grid::from_fn(10, 10, |_, _| Dead);
         let w = World::new(grid.clone());
         assert_eq!(0, w.gen);
         assert_eq!(&grid, &w.curr);
@@ -309,5 +310,22 @@ mod tests {
         ]);
         assert_eq!(&w.curr, expected);
 
+    }
+    
+    // Benchmarks
+    
+    use test::Bencher;
+    
+    fn make_even_grid(w: usize, h: usize) -> Grid {
+        Grid::from_fn(w, h, |x, y| if (x + y) % 2 == 0 { Live } else { Dead })
+    }
+    
+    #[bench]
+    fn bench_standard_rules(b: &mut Bencher) {
+    
+        let grid = make_even_grid(500, 500);
+        let mut world = World::new_with_rules(grid, rules::standard_rules);
+    
+        b.iter(|| world.step_mut());
     }
 }

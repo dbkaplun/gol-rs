@@ -4,6 +4,9 @@
 //!
 //! [gol-tcod]: https://github.com/deadalusai/gol-tcod
 
+#![feature(test)]
+
+extern crate test;
 extern crate rand;
 
 pub mod plaintext;
