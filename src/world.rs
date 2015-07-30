@@ -4,8 +4,6 @@
 
 use std::iter::Iterator;
 
-use rand::{ Rng };
-
 use grid::{ Grid };
 use grid;
 use rules::{ RulesFn };

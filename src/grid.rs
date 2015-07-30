@@ -5,8 +5,6 @@ use std::iter::Iterator;
 use std::option::Option;
 use std::fmt::{ Debug, Formatter, Error };
 
-use rand::{ Rng };
-
 /// Represents a single Cell, alive or dead
 #[derive(PartialEq, Clone, Debug)]
 pub enum Cell { Live, Dead }
@@ -57,12 +55,6 @@ impl Grid {
         let count = width * height;
 
         Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
-    }
-
-    /// Constructs a random grid of `width` and `height`
-    pub fn create_random<R: Rng>(rng: &mut R, width: usize, height: usize) -> Grid {
-        let choices = [ Cell::Live, Cell::Dead ];
-        Grid::from_fn(width, height, |_, _| rng.choose(&choices).unwrap().clone())
     }
 
     /// Gets the width of this `Grid`
@@ -247,15 +239,8 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
 #[cfg(test)]
 pub mod tests {
 
-    use rand::{ SeedableRng, StdRng };
-
     use super::{ Grid, Delta };
     use super::Cell::{ Live, Dead };
-
-    fn make_rng() -> StdRng {
-        let seed: &[_] = &[1, 2, 3, 4];
-        SeedableRng::from_seed(seed)
-    }
 
     pub fn make_square_grid() -> Grid {
         use super::Cell::Dead as X;
@@ -360,18 +345,6 @@ pub mod tests {
         for cell in &grid.cells {
             assert_eq!(&Dead, cell)
         }
-    }
-
-    #[test]
-    fn can_create_random_grid() {
-        
-        let mut rng = make_rng();
-
-        let grid = Grid::create_random(&mut rng, 10, 10);
-
-        assert_eq!(grid.width, 10);
-        assert_eq!(grid.height, 10);
-        assert_eq!(grid.cells.len(), 100);
     }
 
     #[test]

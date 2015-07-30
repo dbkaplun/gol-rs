@@ -7,11 +7,3 @@ authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
 [lib]
 name = "gol"
 path = "src/lib.rs"
-
-[dependencies]
-rand = "0.3"
-
-[[bin]]
-name = "gol-test"
-test = false
-doc = false
