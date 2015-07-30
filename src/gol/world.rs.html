@@ -353,14 +353,28 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Structures and functions used for constructing a Game of Live `World` which combines a `Grid` and a rule set.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Implements the functionality required for a simple Game of Life simulation.</span>
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
-
-<span class='kw'>use</span> <span class='ident'>rand</span>::{ <span class='ident'>Rng</span> };
 
 <span class='kw'>use</span> <span class='ident'>grid</span>::{ <span class='ident'>Grid</span> };
 <span class='kw'>use</span> <span class='ident'>grid</span>;
@@ -459,6 +473,7 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
 
+    <span class='kw'>use</span> <span class='ident'>rules</span>;
     <span class='kw'>use</span> <span class='ident'>world</span>::<span class='ident'>World</span>;
     <span class='kw'>use</span> <span class='ident'>grid</span>::{ <span class='ident'>Grid</span> };
     <span class='kw'>use</span> <span class='ident'>grid</span>::<span class='ident'>Cell</span>::{ <span class='ident'>Live</span>, <span class='ident'>Dead</span> };
@@ -488,7 +503,7 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>can_create_world_with_grid</span>() {
 
-        <span class='kw'>let</span> <span class='ident'>grid</span> <span class='op'>=</span> <span class='ident'>Grid</span>::<span class='ident'>from_fn</span>(<span class='number'>10</span>, <span class='number'>10</span>, <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>Dead</span>);
+        <span class='kw'>let</span> <span class='ident'>grid</span> <span class='op'>=</span> <span class='ident'>Grid</span>::<span class='ident'>from_fn</span>(<span class='number'>10</span>, <span class='number'>10</span>, <span class='op'>|</span>_, _<span class='op'>|</span> <span class='ident'>Dead</span>);
         <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='ident'>World</span>::<span class='ident'>new</span>(<span class='ident'>grid</span>.<span class='ident'>clone</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='ident'>w</span>.<span class='ident'>gen</span>);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>grid</span>, <span class='kw-2'>&amp;</span><span class='ident'>w</span>.<span class='ident'>curr</span>);
@@ -665,6 +680,23 @@
         ]);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>w</span>.<span class='ident'>curr</span>, <span class='ident'>expected</span>);
 
+    }
+    
+    <span class='comment'>// Benchmarks</span>
+    
+    <span class='kw'>use</span> <span class='ident'>test</span>::<span class='ident'>Bencher</span>;
+    
+    <span class='kw'>fn</span> <span class='ident'>make_even_grid</span>(<span class='ident'>w</span>: <span class='ident'>usize</span>, <span class='ident'>h</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Grid</span> {
+        <span class='ident'>Grid</span>::<span class='ident'>from_fn</span>(<span class='ident'>w</span>, <span class='ident'>h</span>, <span class='op'>|</span><span class='ident'>x</span>, <span class='ident'>y</span><span class='op'>|</span> <span class='kw'>if</span> (<span class='ident'>x</span> <span class='op'>+</span> <span class='ident'>y</span>) <span class='op'>%</span> <span class='number'>2</span> <span class='op'>==</span> <span class='number'>0</span> { <span class='ident'>Live</span> } <span class='kw'>else</span> { <span class='ident'>Dead</span> })
+    }
+    
+    <span class='attribute'>#[<span class='ident'>bench</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>bench_standard_rules</span>(<span class='ident'>b</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Bencher</span>) {
+    
+        <span class='kw'>let</span> <span class='ident'>grid</span> <span class='op'>=</span> <span class='ident'>make_even_grid</span>(<span class='number'>500</span>, <span class='number'>500</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>world</span> <span class='op'>=</span> <span class='ident'>World</span>::<span class='ident'>new_with_rules</span>(<span class='ident'>grid</span>, <span class='ident'>rules</span>::<span class='ident'>standard_rules</span>);
+    
+        <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> <span class='ident'>world</span>.<span class='ident'>step_mut</span>());
     }
 }
 </pre>
