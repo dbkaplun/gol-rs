@@ -45,14 +45,14 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-1219' class='srclink' href='../../src/gol/world.rs.html#14-19' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-1220' class='srclink' href='../../src/gol/world.rs.html#16-21' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct World {
     // some fields omitted
-}</pre><div class='docblock'><p>Contains a Game of Life grid, ruleset and generation. Includes functions for modifying
-the world and stepping the simulation </p>
+}</pre><div class='docblock'><p>Provides hosting for a basic Game of Life simulation. Includes functions for modifying
+the world and stepping the simulation both immutably and in-place.</p>
 </div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(grid: <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
 <div class='docblock'><p>Constructs a new <code>World</code> with the given <code>Grid</code></p>
-</div><h4 id='method.new_with_rules' class='method'><code>fn <a href='#method.new_with_rules' class='fnname'>new_with_rules</a>(grid: <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>, rules: <a class='type' href='../../gol/world/type.RulesFn.html' title='gol::world::RulesFn'>RulesFn</a>) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
+</div><h4 id='method.new_with_rules' class='method'><code>fn <a href='#method.new_with_rules' class='fnname'>new_with_rules</a>(grid: <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>, rules: <a class='type' href='../../gol/rules/type.RulesFn.html' title='gol::rules::RulesFn'>RulesFn</a>) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
 <div class='docblock'><p>Constructs a new <code>World</code> with the given <code>Grid</code> and <code>RulesFn</code></p>
 </div><h4 id='method.generation' class='method'><code>fn <a href='#method.generation' class='fnname'>generation</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></h4>
 <div class='docblock'><p>Gets the current generation for this <code>World</code></p>

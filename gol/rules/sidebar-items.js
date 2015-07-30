@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["standard_rules","Implements the standard rules of the Game of Life"]]});
+initSidebarItems({"fn":[["standard_rules","Implements the standard rules of the Game of Life."]],"type":[["RulesFn","Describes a static ruleset function."]]});

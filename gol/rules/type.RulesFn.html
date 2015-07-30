@@ -7,7 +7,7 @@
     <meta name="description" content="API documentation for the Rust `RulesFn` type in crate `gol`.">
     <meta name="keywords" content="rust, rustlang, rust-lang, RulesFn">
 
-    <title>gol::world::RulesFn - Rust</title>
+    <title>gol::rules::RulesFn - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
@@ -26,7 +26,7 @@
 
     <section class="sidebar">
         
-        <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>world</a></p><script>window.sidebarCurrent = {name: 'RulesFn', ty: 'type', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>rules</a></p><script>window.sidebarCurrent = {name: 'RulesFn', ty: 'type', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </section>
 
     <nav class="sub">
@@ -41,12 +41,16 @@
     </nav>
 
     <section id='main' class="content type">
-<h1 class='fqn'><span class='in-band'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>world</a>::<wbr><a class='type' href=''>RulesFn</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>rules</a>::<wbr><a class='type' href=''>RulesFn</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-1208' class='srclink' href='../../src/gol/world.rs.html#10' title='goto source code'>[src]</a></span></h1>
-<pre class='rust typedef'>type RulesFn = fn(&amp;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>, <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>;</pre></section>
+        </span><a id='src-1165' class='srclink' href='../../src/gol/rules.rs.html#9' title='goto source code'>[src]</a></span></h1>
+<pre class='rust typedef'>type RulesFn = fn(cell: &amp;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>, neighbours: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>;</pre><div class='docblock'><p>Describes a static ruleset function.</p>
+
+<p>This function accepts a current cell state and the count of neightbours 
+that cell has and returns a new cell state.</p>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

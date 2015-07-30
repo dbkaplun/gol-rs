@@ -436,7 +436,13 @@
 <span id="394">394</span>
 <span id="395">395</span>
 <span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
 </pre><pre class='rust '>
+<span class='doccomment'>//! Module for parsing the [Plaintext](http://conwaylife.com/wiki/Plaintext) Game of Life</span>
+<span class='doccomment'>//! file format into a `Grid`.</span>
+
 <span class='kw'>use</span> <span class='ident'>grid</span>::{ <span class='ident'>Cell</span>, <span class='ident'>Grid</span> };
 <span class='kw'>use</span> <span class='ident'>grid</span>::<span class='ident'>Cell</span>::<span class='op'>*</span>;
 
@@ -448,7 +454,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>FromStr</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>;
 
-<span class='doccomment'>/// Struct for the contents of a [Plaintext](http://conwaylife.com/wiki/Plaintext) format Game of Life file.</span>
+<span class='doccomment'>/// Struct for the contents of a Plaintext format Game of Life file.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// # Optional padding syntax</span>
 <span class='doccomment'>///</span>

@@ -351,20 +351,24 @@
 <span id="309">309</span>
 <span id="310">310</span>
 <span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
 </pre><pre class='rust '>
+<span class='doccomment'>//! Structures and functions used for constructing a Game of Live `World` which combines a `Grid` and a rule set.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! Implements the functionality required for a simple Game of Life simulation.</span>
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
 
 <span class='kw'>use</span> <span class='ident'>rand</span>::{ <span class='ident'>Rng</span> };
 
-<span class='kw'>use</span> <span class='ident'>grid</span>::{ <span class='ident'>Cell</span>, <span class='ident'>Grid</span> };
+<span class='kw'>use</span> <span class='ident'>grid</span>::{ <span class='ident'>Grid</span> };
 <span class='kw'>use</span> <span class='ident'>grid</span>;
+<span class='kw'>use</span> <span class='ident'>rules</span>::{ <span class='ident'>RulesFn</span> };
 <span class='kw'>use</span> <span class='ident'>rules</span>;
 
-<span class='kw'>pub</span> <span class='kw'>type</span> <span class='ident'>RulesFn</span> <span class='op'>=</span> <span class='kw'>fn</span>(<span class='kw-2'>&amp;</span><span class='ident'>Cell</span>, <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Cell</span>;
-
-<span class='doccomment'>/// Contains a Game of Life grid, ruleset and generation. Includes functions for modifying</span>
-<span class='doccomment'>/// the world and stepping the simulation </span>
+<span class='doccomment'>/// Provides hosting for a basic Game of Life simulation. Includes functions for modifying</span>
+<span class='doccomment'>/// the world and stepping the simulation both immutably and in-place.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>World</span> {
     <span class='ident'>gen</span>: <span class='ident'>i64</span>,
     <span class='ident'>rules</span>: <span class='ident'>RulesFn</span>,
