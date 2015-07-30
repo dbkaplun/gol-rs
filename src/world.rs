@@ -1,16 +1,18 @@
+//! Structures and functions used for constructing a Game of Live `World` which combines a `Grid` and a rule set.
+//!
+//! Implements the functionality required for a simple Game of Life simulation.
 
 use std::iter::Iterator;
 
 use rand::{ Rng };
 
-use grid::{ Cell, Grid };
+use grid::{ Grid };
 use grid;
+use rules::{ RulesFn };
 use rules;
 
-pub type RulesFn = fn(&Cell, usize) -> Cell;
-
-/// Contains a Game of Life grid, ruleset and generation. Includes functions for modifying
-/// the world and stepping the simulation 
+/// Provides hosting for a basic Game of Life simulation. Includes functions for modifying
+/// the world and stepping the simulation both immutably and in-place.
 pub struct World {
     gen: i64,
     rules: RulesFn,

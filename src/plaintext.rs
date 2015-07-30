@@ -1,3 +1,6 @@
+//! Module for parsing the [Plaintext](http://conwaylife.com/wiki/Plaintext) Game of Life
+//! file format into a `Grid`.
+
 use grid::{ Cell, Grid };
 use grid::Cell::*;
 
@@ -9,7 +12,7 @@ use std::convert;
 use std::str::FromStr;
 use std::iter;
 
-/// Struct for the contents of a [Plaintext](http://conwaylife.com/wiki/Plaintext) format Game of Life file.
+/// Struct for the contents of a Plaintext format Game of Life file.
 ///
 /// # Optional padding syntax
 ///

@@ -1,3 +1,5 @@
+//! The grid module provides `Grid` for working with a "torus world" grid of cells.
+
 use std::vec::Vec;
 use std::iter::Iterator;
 use std::option::Option;
