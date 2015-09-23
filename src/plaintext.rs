@@ -71,7 +71,7 @@ impl FromStr for Padding {
     /// Parses a css-style `top[,right[,bottom[,left]]]` expression
     /// into a Padding struct
     fn from_str(s: &str) -> Result<Padding, ()> {
-        let mut parts = s.split(',').map(|p| usize::from_str(p.trim()));
+        let mut parts = s.split(',').map(|p| p.trim().parse());
         let top    = unwrap_or!(parts.next(), return Err(()));
         let right  = unwrap_or!(parts.next(), top);
         let bottom = unwrap_or!(parts.next(), top);
