@@ -45,35 +45,26 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-5' class='srclink' href='../../src/gol/plaintext.rs.html#1-399' title='goto source code'>[src]</a></span></h1>
-<div class='docblock'><p>Module for parsing the <a href="http://conwaylife.com/wiki/Plaintext">Plaintext</a> Game of Life
+        </span><a id='src-5' class='srclink' href='../../src/gol/plaintext/mod.rs.html#1-296' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Module for parsing the <a href="http://conwaylife.com/wiki/PlainText">PlainText</a> Game of Life
 file format into a <code>Grid</code>.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                     <tr class=' module-item'>
-                        <td><a class='struct' href='struct.Padding.html'
-                               title='gol::plaintext::Padding'>Padding</a></td>
-                        <td class='docblock short'>
-                             <p>Describes padding in the order <code>top</code>, <code>right</code>, <code>bottom</code>, <code>left</code></p>
-
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
                         <td><a class='struct' href='struct.PlainText.html'
                                title='gol::plaintext::PlainText'>PlainText</a></td>
                         <td class='docblock short'>
-                             <p>Struct for the contents of a Plaintext format Game of Life file.</p>
+                             <p>Struct for the contents of a PlainText format Game of Life file.</p>
 
                         </td>
                     </tr>
                 </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
                     <tr class=' module-item'>
-                        <td><a class='enum' href='enum.Error.html'
-                               title='gol::plaintext::Error'>Error</a></td>
+                        <td><a class='enum' href='enum.ParseError.html'
+                               title='gol::plaintext::ParseError'>ParseError</a></td>
                         <td class='docblock short'>
-                             <p>Represents any errors which occur during the Plaintext parsing process</p>
+                             <p>Represents any errors which occur during the PlainText parsing process</p>
 
                         </td>
                     </tr>
@@ -83,7 +74,7 @@ file format into a <code>Grid</code>.</p>
                         <td><a class='fn' href='fn.parse_plaintext.html'
                                title='gol::plaintext::parse_plaintext'>parse_plaintext</a></td>
                         <td class='docblock short'>
-                             <p>Parses the <a href="http://conwaylife.com/wiki/Plaintext">Plaintext</a> format from a buffered stream</p>
+                             <p>Parses the <a href="http://conwaylife.com/wiki/PlainText">PlainText</a> format from a buffered stream</p>
 
                         </td>
                     </tr>
@@ -93,7 +84,7 @@ file format into a <code>Grid</code>.</p>
                         <td><a class='type' href='type.ParseResult.html'
                                title='gol::plaintext::ParseResult'>ParseResult</a></td>
                         <td class='docblock short'>
-                             <p>Represents the result of a Plaintext parse operation</p>
+                             <p>Represents the result of a PlainText parse operation</p>
 
                         </td>
                     </tr>
