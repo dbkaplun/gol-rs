@@ -1,22 +1,26 @@
-//! Module for parsing the [Plaintext](http://conwaylife.com/wiki/Plaintext) Game of Life
+//! Module for parsing the [PlainText](http://conwaylife.com/wiki/PlainText) Game of Life
 //! file format into a `Grid`.
+
+mod padding;
 
 use grid::{ Cell, Grid };
 use grid::Cell::*;
+
+use self::padding::Padding;
 
 use std::vec::Vec;
 use std::result;
 use std::io;
 use std::fmt;
 use std::convert;
-use std::str::FromStr;
 use std::iter;
+use std::error::Error;
 
-/// Struct for the contents of a Plaintext format Game of Life file.
+/// Struct for the contents of a PlainText format Game of Life file.
 ///
 /// # Optional padding syntax
 ///
-/// The plaintext parser also provides a `Padding` extension, e.g.:
+/// The PlainText parser also provides a `Padding` extension, e.g.:
 ///
 /// ```text
 /// !Name: Example
@@ -25,148 +29,31 @@ use std::iter;
 /// .O.
 /// O.O
 /// .O.
-/// ```  
+/// ```
 ///
 /// Resulting in the following padding being applied to the result:
-/// 
+///
 /// | Top | Right | Bottom | Left |
 /// |-----|-------|--------|------|
 /// | 5   | 10    | 5      | 10   |
-/// 
+///
 pub struct PlainText {
     pub name: String,
     pub comment: String,
     pub data: Grid
 }
 
-/// Describes padding in the order `top`, `right`, `bottom`, `left`
-#[derive(PartialEq, Debug)]
-pub struct Padding {
-    pub top: usize,
-    pub right: usize,
-    pub bottom: usize,
-    pub left: usize,
-}
-    
-macro_rules! unwrap_or {
-    ( $v:expr, $otherwise:expr ) => {
-        match $v {
-            Some(Err(..)) => return Err(()),
-            Some(Ok(v)) => v,
-            None => $otherwise,
-        }
-    }
-}
-
-impl Padding {
-    /// Constructs a new instance of the Padding struct
-    pub fn new(top: usize, right: usize, bottom: usize, left: usize) -> Padding {
-        Padding { top: top, right: right, bottom: bottom, left: left }
-    }
-}
-
-impl FromStr for Padding {
-    type Err = ();
-    
-    /// Parses a css-style `top[,right[,bottom[,left]]]` expression
-    /// into a Padding struct
-    fn from_str(s: &str) -> Result<Padding, ()> {
-        let mut parts = s.split(',').map(|p| p.trim().parse());
-        let top    = unwrap_or!(parts.next(), return Err(()));
-        let right  = unwrap_or!(parts.next(), top);
-        let bottom = unwrap_or!(parts.next(), top);
-        let left   = unwrap_or!(parts.next(), right);
-        //Assert no more parts
-        if parts.next().is_some() {
-            return Err(());
-        }
-        Ok(Padding::new(top, right, bottom, left))
-    }
-}
-
-#[cfg(test)]
-mod padding_tests {
-    use super::Padding;
-    use std::str::FromStr;
-
-    #[test]
-    fn can_parse_single_value() {
-        let expected = Ok(Padding::new(10, 10, 10, 10));
-        let actual = Padding::from_str("10");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn can_parse_two_values() {
-        let expected = Ok(Padding::new(10, 20, 10, 20));
-        let actual = Padding::from_str("10,20");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn can_parse_three_values() {
-        let expected = Ok(Padding::new(10, 20, 30, 20));
-        let actual = Padding::from_str("10,20,30");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn can_parse_four_values() {
-        let expected = Ok(Padding::new(10, 20, 30, 40));
-        let actual = Padding::from_str("10,20,30,40");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn can_ignore_whitespace() {
-        let expected = Ok(Padding::new(10, 20, 30, 40));
-        let actual = Padding::from_str(" 10 , 20 , 30 , 40 ");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn fails_with_more_than_five_values() {
-        let expected = Err(());
-        let actual = Padding::from_str("10,20,30,40,60");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn fails_with_no_values() {
-        let expected = Err(());
-        let actual = Padding::from_str("");
-        assert_eq!(expected, actual)
-    }
-
-    #[test]
-    fn fails_with_invalid_value() {
-        let expected = Err(());
-        let actual = Padding::from_str("1,this isn't an int");
-        assert_eq!(expected, actual)
-    }
-
-}
-
-/// Represents any errors which occur during the Plaintext parsing process
+/// Represents any errors which occur during the PlainText parsing process
 #[derive(Debug)]
-pub enum Error {
+pub enum ParseError {
     Io(io::Error),
     NameLineMissing,
     Invalid
 }
 
-/// Represents the result of a Plaintext parse operation
-pub type ParseResult = result::Result<PlainText, Error>;
-
-impl convert::From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::Io(err)
-    }
-}
-
-impl fmt::Display for Error {
+impl fmt::Display for ParseError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        use self::Error::*;
+        use self::ParseError::*;
         match *self {
             Io(ref e) => write!(fmt, "I/O Error: {}", e),
             NameLineMissing => write!(fmt, "Name line missing"),
@@ -175,12 +62,21 @@ impl fmt::Display for Error {
     }
 }
 
+impl convert::From<io::Error> for ParseError {
+    fn from(err: io::Error) -> ParseError {
+        ParseError::Io(err)
+    }
+}
+
+/// Represents the result of a PlainText parse operation
+pub type ParseResult = result::Result<PlainText, ParseError>;
+
 fn sub_string_from(source: &str, from: usize) -> Option<&str> {
     source.char_indices().nth(from).map(|(char_idx, _)| &source[char_idx..])
 }
 
-/// Parses the [Plaintext](http://conwaylife.com/wiki/Plaintext) format from a buffered stream
-pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
+/// Parses the [PlainText](http://conwaylife.com/wiki/PlainText) format from a buffered stream
+pub fn parse_plaintext<R>(reader: R) -> ParseResult
     where R: io::BufRead
 {
     #[derive(PartialEq)]
@@ -198,7 +94,7 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
         let line = try!(line);
         if state == S::Name {
             if !line.starts_with("!Name:") {
-                return Err(Error::NameLineMissing);
+                return Err(ParseError::NameLineMissing);
             }
             let line = sub_string_from(&line, 6).unwrap_or("").trim();
             name.push_str(line);
@@ -212,7 +108,7 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
             else if line.starts_with("!Padding:") {
                 //special padding extension
                 let line = sub_string_from(&line, 9).unwrap_or("").trim();
-                if let Ok(p) = Padding::from_str(line) {
+                if let Ok(p) = line.parse() {
                     padding = p;
                 }
             }
@@ -225,19 +121,19 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
             }
         }
         if state == S::Body {
-            let mut row = Vec::new();
+            let mut row = Vec::with_capacity(width);
             for c in line.trim().chars() {
                 match c {
                     'O' => row.push(Live),
                     '.' => row.push(Dead),
-                     _  => return Err(Error::Invalid),
+                     _  => return Err(ParseError::Invalid),
                 }
             }
             if rows.len() == 0 {
                 width = row.len();
             }
             else if width != row.len() {
-                return Err(Error::Invalid);
+                return Err(ParseError::Invalid);
             }
             rows.push(row);
         }
@@ -251,27 +147,28 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
         data: grid
     })
 }
- 
+
 fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, p: Padding) -> Grid {
 
     let width = width + p.left + p.right;
     let height = rows.len() + p.top + p.bottom;
 
     let mut cells = Vec::with_capacity(width * height);
-    
-    cells.extend(iter::repeat(Dead).take(p.top * width));
-    for row in &rows {
-        cells.extend(iter::repeat(Dead).take(p.left));
-        cells.extend(row.iter().map(|c| c.clone()));
-        cells.extend(iter::repeat(Dead).take(p.right));
+    let dead_cells = |c| iter::repeat(Dead).take(c);
+
+    cells.extend(dead_cells(p.top * width));
+    for row in rows {
+        cells.extend(dead_cells(p.left));
+        cells.extend(row);
+        cells.extend(dead_cells(p.right));
     }
-    cells.extend(iter::repeat(Dead).take(p.bottom * width));
-    
+    cells.extend(dead_cells(p.bottom * width));
+
     Grid::from_raw(width, height, cells)
 }
 
 #[cfg(test)]
-mod plaintext_tests {
+mod tests {
 
     use std::io;
     use grid::Cell::{ Live, Dead };
@@ -300,12 +197,12 @@ O.
         assert_eq!(value.comment, "This is a comment");
         assert_eq!(value.data.width(), 2);
         assert_eq!(value.data.height(), 2);
-        
+
         let expected = vec![
             Dead, Live,
             Live, Dead
         ];
-        
+
         for (left, right) in value.data.iter_cells().zip(expected) {
             assert_eq!(left.2, &right)
         }
@@ -337,14 +234,14 @@ O.
         assert_eq!(value.comment, "This is a comment\n");
         assert_eq!(value.data.width(), 4 + 2);
         assert_eq!(value.data.height(), 2 + 2);
-        
+
         let expected = vec![
             Dead, Dead, Dead, Dead, Dead, Dead,
             Dead, Dead, Dead, Live, Dead, Dead,
             Dead, Dead, Live, Dead, Dead, Dead,
             Dead, Dead, Dead, Dead, Dead, Dead,
         ];
-        
+
         for (left, right) in value.data.iter_cells().zip(expected) {
             assert_eq!(left.2, &right)
         }
