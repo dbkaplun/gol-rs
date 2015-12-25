@@ -4,7 +4,7 @@ use grid::{ Cell };
 
 /// Describes a static ruleset function.
 ///
-/// This function accepts a current cell state and the count of neightbours 
+/// This function accepts a current cell state and the count of neighbours
 /// that cell has and returns a new cell state.
 pub type RulesFn = fn(cell: &Cell, neighbours: usize) -> Cell;
 
