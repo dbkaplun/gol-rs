@@ -295,35 +295,37 @@ mod tests {
         let mut w = make_lonely_world();
         w.write_cells(0, 0, &new_data);
 
+        //NOTE: Overwrites entire world
         assert_eq!(&w.curr, &new_data);
 
         //write from bottom right
         let mut w = make_lonely_world();
         w.write_cells(2, 2, &new_data);
 
+        //NOTE: Overwrites bottom corner
         let expected = &Grid::from_raw(3, 3, vec![
-            X, O, O,
-            O, O, O,
-            O, O, O,
+            X, X, X,
+            X, O, X,
+            X, X, O,
         ]);
         assert_eq!(&w.curr, expected);
 
     }
-    
+
     // Benchmarks
-    
+
     use test::Bencher;
-    
+
     fn make_even_grid(w: usize, h: usize) -> Grid {
         Grid::from_fn(w, h, |x, y| if (x + y) % 2 == 0 { Live } else { Dead })
     }
-    
+
     #[bench]
     fn bench_standard_rules(b: &mut Bencher) {
-    
+
         let grid = make_even_grid(500, 500);
         let mut world = World::new_with_rules(grid, rules::standard_rules);
-    
+
         b.iter(|| world.step_mut());
     }
 }
