@@ -5,7 +5,6 @@
 use std::iter::Iterator;
 
 use grid::{ Grid };
-use grid;
 use rules::{ RulesFn, NeighboursFn };
 use rules;
 
@@ -96,14 +95,13 @@ impl World {
                 prev: None }
     }
 
-    /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
-    pub fn write_cells(&mut self, x: usize, y: usize, data: &Grid) {
-        self.curr.write_cells(x, y, data);
+    /// Get the current grid
+    pub fn grid(&self) -> &Grid {
+        &self.curr
     }
 
-    /// Returns an iterator over rows in this world
-    pub fn iter_rows(&self) -> grid::RowIter {
-        self.curr.iter_rows()
+    pub fn grid_mut(&mut self) -> &mut Grid {
+        &mut self.curr
     }
 }
 
@@ -250,7 +248,7 @@ mod tests {
 
         let w = make_oblong_world();
 
-        let mut iter = w.iter_rows();
+        let mut iter = w.grid().iter_rows();
 
         assert_eq!(iter.next().unwrap(), &[X, X, O, X, X]);
         assert_eq!(iter.next().unwrap(), &[X, O, X, O, X]);
@@ -302,14 +300,14 @@ mod tests {
 
         //write from top left
         let mut w = make_lonely_world();
-        w.write_cells(0, 0, &new_data);
+        w.grid_mut().write_cells(0, 0, &new_data);
 
         //NOTE: Overwrites entire world
         assert_eq!(&w.curr, &new_data);
 
         //write from bottom right
         let mut w = make_lonely_world();
-        w.write_cells(2, 2, &new_data);
+        w.grid_mut().write_cells(2, 2, &new_data);
 
         //NOTE: Overwrites bottom corner
         let expected = &Grid::from_raw(3, 3, vec![
