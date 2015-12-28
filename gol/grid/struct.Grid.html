@@ -9,6 +9,7 @@
 
     <title>gol::grid::Grid - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
@@ -24,10 +25,10 @@
 
     
 
-    <section class="sidebar">
+    <nav class="sidebar">
         
         <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>grid</a></p><script>window.sidebarCurrent = {name: 'Grid', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
-    </section>
+    </nav>
 
     <nav class="sub">
         <form class="search-form js-only">
@@ -45,49 +46,49 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-2087' class='srclink' href='../../src/gol/grid.rs.html#26-30' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-394' class='srclink' href='../../src/gol/grid.rs.html#26-30' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Grid {
     // some fields omitted
 }</pre><div class='docblock'><p>An addressable grid of <code>Cell</code>s</p>
 
-<p>Provides a number of functions for constructing, modifying and walking <code>Cell</code> grids. </p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.from_raw' class='method'><code>fn <a href='#method.from_raw' class='fnname'>from_raw</a>(width: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, state: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>&gt;) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
+<p>Provides a number of functions for constructing, modifying and walking <code>Cell</code> grids.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.from_raw' class='method'><code>fn <a href='#method.from_raw' class='fnname'>from_raw</a>(width: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, state: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>&gt;) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
 <div class='docblock'><p>Constructs a Grid from raw components</p>
-</div><h4 id='method.from_fn' class='method'><code>fn <a href='#method.from_fn' class='fnname'>from_fn</a>&lt;F&gt;(width: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, f: F) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a> <span class='where'>where F: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a></span></code></h4>
+</div><h4 id='method.from_fn' class='method'><code>fn <a href='#method.from_fn' class='fnname'>from_fn</a>&lt;F&gt;(width: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, f: F) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a> <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a></span></code></h4>
 <div class='docblock'><p>Constructs a Grid of <code>width</code> and <code>height</code> using a factory function.</p>
-</div><h4 id='method.create_dead' class='method'><code>fn <a href='#method.create_dead' class='fnname'>create_dead</a>(width: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
+</div><h4 id='method.create_dead' class='method'><code>fn <a href='#method.create_dead' class='fnname'>create_dead</a>(width: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, height: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
 <div class='docblock'><p>Constructs a dead grid of <code>width</code> and <code>height</code></p>
-</div><h4 id='method.width' class='method'><code>fn <a href='#method.width' class='fnname'>width</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h4 id='method.width' class='method'><code>fn <a href='#method.width' class='fnname'>width</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Gets the width of this <code>Grid</code></p>
-</div><h4 id='method.height' class='method'><code>fn <a href='#method.height' class='fnname'>height</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h4 id='method.height' class='method'><code>fn <a href='#method.height' class='fnname'>height</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Gets the height of this <code>Grid</code></p>
-</div><h4 id='method.cell_at' class='method'><code>fn <a href='#method.cell_at' class='fnname'>cell_at</a>(&amp;self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a></code></h4>
+</div><h4 id='method.cell_at' class='method'><code>fn <a href='#method.cell_at' class='fnname'>cell_at</a>(&amp;self, x: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a></code></h4>
 <div class='docblock'><p>Returns a reference to the <code>Cell</code> at the given coordinates</p>
-</div><h4 id='method.set_cell' class='method'><code>fn <a href='#method.set_cell' class='fnname'>set_cell</a>(&amp;mut self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, cell: <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>)</code></h4>
+</div><h4 id='method.set_cell' class='method'><code>fn <a href='#method.set_cell' class='fnname'>set_cell</a>(&amp;mut self, x: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, cell: <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>)</code></h4>
 <div class='docblock'><p>Overwrites the <code>Cell</code> at the given coordinates with the given value</p>
-</div><h4 id='method.write_cells' class='method'><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>)</code></h4>
-<div class='docblock'><p>Overwrite the cells starting at coords <code>(x, y)</code> with the data in the given <code>Grid</code></p>
-</div><h4 id='method.count_neighbours' class='method'><code>fn <a href='#method.count_neighbours' class='fnname'>count_neighbours</a>(&amp;self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
-<div class='docblock'><p>Count the number of neighbors the <code>Cell</code> at the given
-coordinates has.</p>
+</div><h4 id='method.write_cells' class='method'><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>)</code></h4>
+<div class='docblock'><p>Overwrite the cells starting at coords <code>(x, y)</code> with the data in the given <code>Grid</code>
+If any coordinates are outside the grid no action is taken.</p>
 </div><h4 id='method.iter_rows' class='method'><code>fn <a href='#method.iter_rows' class='fnname'>iter_rows</a>(&amp;self) -&gt; <a class='struct' href='../../gol/grid/struct.RowIter.html' title='gol::grid::RowIter'>RowIter</a></code></h4>
 <div class='docblock'><p>Returns an iterator over rows in this <code>Grid</code></p>
 </div><h4 id='method.iter_cells' class='method'><code>fn <a href='#method.iter_cells' class='fnname'>iter_cells</a>(&amp;self) -&gt; <a class='struct' href='../../gol/grid/struct.CellIter.html' title='gol::grid::CellIter'>CellIter</a></code></h4>
 <div class='docblock'><p>Returns an iterator over <code>Cell</code>s in this <code>Grid</code></p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='http://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='http://doc.rust-lang.org/nightly/core/fmt/struct.Error.html' title='core::fmt::Error'>Error</a>&gt;</code></h4>
-</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
-<h4 id='method.clone_from' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
-</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
-<h4 id='method.ne' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html' title='core::fmt::Error'>Error</a>&gt;</code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
 
-    <div id="help" class="hidden">
+    <aside id="help" class="hidden">
         <div>
+            <h1 class="hidden">Help</h1>
+
             <div class="shortcuts">
-                <h1>Keyboard Shortcuts</h1>
+                <h2>Keyboard Shortcuts</h2>
 
                 <dl>
                     <dt>?</dt>
@@ -104,7 +105,7 @@ coordinates has.</p>
             </div>
 
             <div class="infos">
-                <h1>Search Tricks</h1>
+                <h2>Search Tricks</h2>
 
                 <p>
                     Prefix searches with a type followed by a colon (e.g.
@@ -114,8 +115,8 @@ coordinates has.</p>
                 <p>
                     Accepted types are: <code>fn</code>, <code>mod</code>,
                     <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>typedef</code> (or
-                    <code>tdef</code>).
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
                 </p>
 
                 <p>
@@ -124,7 +125,7 @@ coordinates has.</p>
                 </p>
             </div>
         </div>
-    </div>
+    </aside>
 
     
 
@@ -136,6 +137,6 @@ coordinates has.</p>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     
-    <script async src="../../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
 
     <title>gol::plaintext::PlainText - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
@@ -24,10 +25,10 @@
 
     
 
-    <section class="sidebar">
+    <nav class="sidebar">
         
         <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>plaintext</a></p><script>window.sidebarCurrent = {name: 'PlainText', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
-    </section>
+    </nav>
 
     <nav class="sub">
         <form class="search-form js-only">
@@ -45,15 +46,14 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-713' class='srclink' href='../../src/gol/plaintext/mod.rs.html#40-44' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-132' class='srclink' href='../../src/gol/plaintext/mod.rs.html#40-44' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct PlainText {
-    pub name: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
-    pub comment: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub name: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub comment: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
     pub data: <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>,
 }</pre><div class='docblock'><p>Struct for the contents of a PlainText format Game of Life file.</p>
 
-<h1 id="optional-padding-syntax" class='section-header'><a
-                           href="#optional-padding-syntax">Optional padding syntax</a></h1>
+<h1 id='optional-padding-syntax' class='section-header'><a href='#optional-padding-syntax'>Optional padding syntax</a></h1>
 <p>The PlainText parser also provides a <code>Padding</code> extension, e.g.:</p>
 
 <pre><code class="language-text">!Name: Example
@@ -66,21 +66,25 @@ O.O
 
 <p>Resulting in the following padding being applied to the result:</p>
 
-<table><thead>
+<table>
+<thead>
 <tr>
 <th>Top</th>
 <th>Right</th>
 <th>Bottom</th>
 <th>Left</th>
 </tr>
-</thead><tbody>
+</thead>
+
+<tbody>
 <tr>
 <td>5</td>
 <td>10</td>
 <td>5</td>
 <td>10</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
 </div><h2 class='fields'>Fields</h2>
 <table><tr class='stab '>
                                   <td id='structfield.name'><code>name</code></td><td></td></tr><tr class='stab '>
@@ -90,10 +94,12 @@ O.O
 
     <section class="footer"></section>
 
-    <div id="help" class="hidden">
+    <aside id="help" class="hidden">
         <div>
+            <h1 class="hidden">Help</h1>
+
             <div class="shortcuts">
-                <h1>Keyboard Shortcuts</h1>
+                <h2>Keyboard Shortcuts</h2>
 
                 <dl>
                     <dt>?</dt>
@@ -110,7 +116,7 @@ O.O
             </div>
 
             <div class="infos">
-                <h1>Search Tricks</h1>
+                <h2>Search Tricks</h2>
 
                 <p>
                     Prefix searches with a type followed by a colon (e.g.
@@ -120,8 +126,8 @@ O.O
                 <p>
                     Accepted types are: <code>fn</code>, <code>mod</code>,
                     <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>typedef</code> (or
-                    <code>tdef</code>).
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
                 </p>
 
                 <p>
@@ -130,7 +136,7 @@ O.O
                 </p>
             </div>
         </div>
-    </div>
+    </aside>
 
     
 
@@ -142,6 +148,6 @@ O.O
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     
-    <script async src="../../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
 
     <title>gol::rules - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
@@ -24,10 +25,10 @@
 
     
 
-    <section class="sidebar">
+    <nav class="sidebar">
         
         <p class='location'><a href='../index.html'>gol</a></p><script>window.sidebarCurrent = {name: 'rules', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
-    </section>
+    </nav>
 
     <nav class="sub">
         <form class="search-form js-only">
@@ -45,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-1510' class='srclink' href='../../src/gol/rules.rs.html#1-20' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-222' class='srclink' href='../../src/gol/rules.rs.html#1-235' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Module containing functions implementing Game of Life rulesets.</p>
 </div><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table>
@@ -58,8 +59,35 @@ of the Game of Life.</p>
 
                         </td>
                     </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.terminal_neighbours.html'
+                               title='gol::rules::terminal_neighbours'>terminal_neighbours</a></td>
+                        <td class='docblock short'>
+                             <p>Implements neighbour counting for a terminal world.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.torus_neighbours.html'
+                               title='gol::rules::torus_neighbours'>torus_neighbours</a></td>
+                        <td class='docblock short'>
+                             <p>Implements neighbour counting for a torus world.</p>
+
+                        </td>
+                    </tr>
                 </table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
 <table>
+                    <tr class=' module-item'>
+                        <td><a class='type' href='type.NeighboursFn.html'
+                               title='gol::rules::NeighboursFn'>NeighboursFn</a></td>
+                        <td class='docblock short'>
+                             <p>Describes a static neighbour counting function.</p>
+
+                        </td>
+                    </tr>
+                
                     <tr class=' module-item'>
                         <td><a class='type' href='type.RulesFn.html'
                                title='gol::rules::RulesFn'>RulesFn</a></td>
@@ -73,10 +101,12 @@ of the Game of Life.</p>
 
     <section class="footer"></section>
 
-    <div id="help" class="hidden">
+    <aside id="help" class="hidden">
         <div>
+            <h1 class="hidden">Help</h1>
+
             <div class="shortcuts">
-                <h1>Keyboard Shortcuts</h1>
+                <h2>Keyboard Shortcuts</h2>
 
                 <dl>
                     <dt>?</dt>
@@ -93,7 +123,7 @@ of the Game of Life.</p>
             </div>
 
             <div class="infos">
-                <h1>Search Tricks</h1>
+                <h2>Search Tricks</h2>
 
                 <p>
                     Prefix searches with a type followed by a colon (e.g.
@@ -103,8 +133,8 @@ of the Game of Life.</p>
                 <p>
                     Accepted types are: <code>fn</code>, <code>mod</code>,
                     <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>typedef</code> (or
-                    <code>tdef</code>).
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
                 </p>
 
                 <p>
@@ -113,7 +143,7 @@ of the Game of Life.</p>
                 </p>
             </div>
         </div>
-    </div>
+    </aside>
 
     
 
@@ -125,6 +155,6 @@ of the Game of Life.</p>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     
-    <script async src="../../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

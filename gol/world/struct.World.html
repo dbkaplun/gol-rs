@@ -9,6 +9,7 @@
 
     <title>gol::world::World - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
@@ -24,10 +25,10 @@
 
     
 
-    <section class="sidebar">
+    <nav class="sidebar">
         
         <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>world</a></p><script>window.sidebarCurrent = {name: 'World', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
-    </section>
+    </nav>
 
     <nav class="sub">
         <form class="search-form js-only">
@@ -45,26 +46,28 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-1567' class='srclink' href='../../src/gol/world.rs.html#14-19' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-311' class='srclink' href='../../src/gol/world.rs.html#14-20' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct World {
     // some fields omitted
 }</pre><div class='docblock'><p>Provides hosting for a basic Game of Life simulation. Includes functions for modifying
 the world and stepping the simulation both immutably and in-place.</p>
 </div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(grid: <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
 <div class='docblock'><p>Constructs a new <code>World</code> with the given <code>Grid</code></p>
-</div><h4 id='method.new_with_rules' class='method'><code>fn <a href='#method.new_with_rules' class='fnname'>new_with_rules</a>(grid: <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>, rules: <a class='type' href='../../gol/rules/type.RulesFn.html' title='gol::rules::RulesFn'>RulesFn</a>) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
-<div class='docblock'><p>Constructs a new <code>World</code> with the given <code>Grid</code> and <code>RulesFn</code></p>
-</div><h4 id='method.generation' class='method'><code>fn <a href='#method.generation' class='fnname'>generation</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></h4>
+</div><h4 id='method.set_rules' class='method'><code>fn <a href='#method.set_rules' class='fnname'>set_rules</a>(&amp;mut self, rules: <a class='type' href='../../gol/rules/type.RulesFn.html' title='gol::rules::RulesFn'>RulesFn</a>)</code></h4>
+<div class='docblock'><p>Sets the rules function</p>
+</div><h4 id='method.set_neighbours' class='method'><code>fn <a href='#method.set_neighbours' class='fnname'>set_neighbours</a>(&amp;mut self, neighbours: <a class='type' href='../../gol/rules/type.NeighboursFn.html' title='gol::rules::NeighboursFn'>NeighboursFn</a>)</code></h4>
+<div class='docblock'><p>Sets the neighbours function</p>
+</div><h4 id='method.generation' class='method'><code>fn <a href='#method.generation' class='fnname'>generation</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></h4>
 <div class='docblock'><p>Gets the current generation for this <code>World</code></p>
-</div><h4 id='method.width' class='method'><code>fn <a href='#method.width' class='fnname'>width</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h4 id='method.width' class='method'><code>fn <a href='#method.width' class='fnname'>width</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Gets the width of this <code>World</code></p>
-</div><h4 id='method.height' class='method'><code>fn <a href='#method.height' class='fnname'>height</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div><h4 id='method.height' class='method'><code>fn <a href='#method.height' class='fnname'>height</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Gets the height of this <code>World</code></p>
 </div><h4 id='method.step_mut' class='method'><code>fn <a href='#method.step_mut' class='fnname'>step_mut</a>(&amp;mut self)</code></h4>
 <div class='docblock'><p>Executes a single step of this <code>World</code> in place</p>
 </div><h4 id='method.step' class='method'><code>fn <a href='#method.step' class='fnname'>step</a>(&amp;self) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
 <div class='docblock'><p>Executes a single step of this <code>World</code> and returns a new, modified world</p>
-</div><h4 id='method.write_cells' class='method'><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>)</code></h4>
+</div><h4 id='method.write_cells' class='method'><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>)</code></h4>
 <div class='docblock'><p>Overwrite the cells starting at coords <code>(x, y)</code> with the data in the given <code>Grid</code></p>
 </div><h4 id='method.iter_rows' class='method'><code>fn <a href='#method.iter_rows' class='fnname'>iter_rows</a>(&amp;self) -&gt; <a class='struct' href='../../gol/grid/struct.RowIter.html' title='gol::grid::RowIter'>RowIter</a></code></h4>
 <div class='docblock'><p>Returns an iterator over rows in this world</p>
@@ -73,10 +76,12 @@ the world and stepping the simulation both immutably and in-place.</p>
 
     <section class="footer"></section>
 
-    <div id="help" class="hidden">
+    <aside id="help" class="hidden">
         <div>
+            <h1 class="hidden">Help</h1>
+
             <div class="shortcuts">
-                <h1>Keyboard Shortcuts</h1>
+                <h2>Keyboard Shortcuts</h2>
 
                 <dl>
                     <dt>?</dt>
@@ -93,7 +98,7 @@ the world and stepping the simulation both immutably and in-place.</p>
             </div>
 
             <div class="infos">
-                <h1>Search Tricks</h1>
+                <h2>Search Tricks</h2>
 
                 <p>
                     Prefix searches with a type followed by a colon (e.g.
@@ -103,8 +108,8 @@ the world and stepping the simulation both immutably and in-place.</p>
                 <p>
                     Accepted types are: <code>fn</code>, <code>mod</code>,
                     <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>typedef</code> (or
-                    <code>tdef</code>).
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
                 </p>
 
                 <p>
@@ -113,7 +118,7 @@ the world and stepping the simulation both immutably and in-place.</p>
                 </p>
             </div>
         </div>
-    </div>
+    </aside>
 
     
 
@@ -125,6 +130,6 @@ the world and stepping the simulation both immutably and in-place.</p>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     
-    <script async src="../../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

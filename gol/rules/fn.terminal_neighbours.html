@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `world` mod in crate `gol`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, world">
+    <meta name="description" content="API documentation for the Rust `terminal_neighbours` fn in crate `gol`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, terminal_neighbours">
 
-    <title>gol::world - Rust</title>
+    <title>gol::rules::terminal_neighbours - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
@@ -27,7 +27,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='../index.html'>gol</a></p><script>window.sidebarCurrent = {name: 'world', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+        <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>rules</a></p><script>window.sidebarCurrent = {name: 'terminal_neighbours', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -41,27 +41,14 @@
         </form>
     </nav>
 
-    <section id='main' class="content mod">
-<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>gol</a>::<wbr><a class='mod' href=''>world</a></span><span class='out-of-band'><span id='render-detail'>
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='../index.html'>gol</a>::<wbr><a href='index.html'>rules</a>::<wbr><a class='fn' href=''>terminal_neighbours</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-304' class='srclink' href='../../src/gol/world.rs.html#1-343' title='goto source code'>[src]</a></span></h1>
-<div class='docblock'><p>Structures and functions used for constructing a Game of Live <code>World</code> which combines a <code>Grid</code> and a rule set.</p>
-
-<p>Implements the functionality required for a simple Game of Life simulation.</p>
-</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.World.html'
-                               title='gol::world::World'>World</a></td>
-                        <td class='docblock short'>
-                             <p>Provides hosting for a basic Game of Life simulation. Includes functions for modifying
-the world and stepping the simulation both immutably and in-place.</p>
-
-                        </td>
-                    </tr>
-                </table></section>
+        </span><a id='src-256' class='srclink' href='../../src/gol/rules.rs.html#48-94' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn terminal_neighbours(grid: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>, x: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></pre><div class='docblock'><p>Implements neighbour counting for a terminal world.</p>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

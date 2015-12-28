@@ -9,6 +9,7 @@
 
     <title>gol::rules::RulesFn - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
@@ -24,10 +25,10 @@
 
     
 
-    <section class="sidebar">
+    <nav class="sidebar">
         
         <p class='location'><a href='../index.html'>gol</a>::<wbr><a href='index.html'>rules</a></p><script>window.sidebarCurrent = {name: 'RulesFn', ty: 'type', relpath: ''};</script><script defer src="sidebar-items.js"></script>
-    </section>
+    </nav>
 
     <nav class="sub">
         <form class="search-form js-only">
@@ -45,20 +46,22 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-1514' class='srclink' href='../../src/gol/rules.rs.html#9' title='goto source code'>[src]</a></span></h1>
-<pre class='rust typedef'>type RulesFn = fn(cell: &amp;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>, neighbours: <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>;</pre><div class='docblock'><p>Describes a static ruleset function.</p>
+        </span><a id='src-225' class='srclink' href='../../src/gol/rules.rs.html#9' title='goto source code'>[src]</a></span></h1>
+<pre class='rust typedef'>type RulesFn = fn(cell: &amp;<a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>, neighbours: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='enum' href='../../gol/grid/enum.Cell.html' title='gol::grid::Cell'>Cell</a>;</pre><div class='docblock'><p>Describes a static ruleset function.</p>
 
-<p>This function accepts a current cell state and the count of neightbours 
+<p>This function accepts a current cell state and the count of neighbours
 that cell has and returns a new cell state.</p>
 </div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
 
-    <div id="help" class="hidden">
+    <aside id="help" class="hidden">
         <div>
+            <h1 class="hidden">Help</h1>
+
             <div class="shortcuts">
-                <h1>Keyboard Shortcuts</h1>
+                <h2>Keyboard Shortcuts</h2>
 
                 <dl>
                     <dt>?</dt>
@@ -75,7 +78,7 @@ that cell has and returns a new cell state.</p>
             </div>
 
             <div class="infos">
-                <h1>Search Tricks</h1>
+                <h2>Search Tricks</h2>
 
                 <p>
                     Prefix searches with a type followed by a colon (e.g.
@@ -85,8 +88,8 @@ that cell has and returns a new cell state.</p>
                 <p>
                     Accepted types are: <code>fn</code>, <code>mod</code>,
                     <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>typedef</code> (or
-                    <code>tdef</code>).
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
                 </p>
 
                 <p>
@@ -95,7 +98,7 @@ that cell has and returns a new cell state.</p>
                 </p>
             </div>
         </div>
-    </div>
+    </aside>
 
     
 
@@ -107,6 +110,6 @@ that cell has and returns a new cell state.</p>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     
-    <script async src="../../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>
