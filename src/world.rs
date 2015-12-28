@@ -95,11 +95,12 @@ impl World {
                 prev: None }
     }
 
-    /// Get the current grid
+    /// Get a reference to the current grid
     pub fn grid(&self) -> &Grid {
         &self.curr
     }
 
+    /// Get a mutable reference to the current grid
     pub fn grid_mut(&mut self) -> &mut Grid {
         &mut self.curr
     }
