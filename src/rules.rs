@@ -137,7 +137,7 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
 #[cfg(test)]
 mod tests {
 
-    use super::{ torus_neighbours };
+    use super::{ torus_neighbours, terminal_neighbours };
 
     use grid::tests::{ make_square_grid,
                        make_pipe_grid,
@@ -147,7 +147,6 @@ mod tests {
 
     #[test]
     fn can_count_torus_neighbours_on_square_grid() {
-
         let g = make_square_grid();
 
         let neighbours = torus_neighbours(&g, 1, 1);
@@ -156,28 +155,18 @@ mod tests {
     }
 
     #[test]
-        fn can_count_torus_neighbours_on_pipe_grid() {
-
+    fn can_count_torus_neighbours_on_pipe_grid() {
         let g = make_pipe_grid();
 
         let neighbours = torus_neighbours(&g, 2, 1);
-
         assert_eq!(neighbours, 3);
-    }
-
-    #[test]
-    fn can_count_torus_neighbours_on_edge_of_pipe_grid() {
-
-        let g = make_pipe_grid();
 
         let neighbours = torus_neighbours(&g, 0, 1);
-
         assert_eq!(neighbours, 3);
     }
 
     #[test]
     fn can_count_torus_neighbours_on_lonely_grid() {
-
         let g = make_lonely_grid();
 
         let neighbours = torus_neighbours(&g, 1, 1);
@@ -190,26 +179,27 @@ mod tests {
         let g = make_oblong_grid();
 
         let neighbours = torus_neighbours(&g, 2, 1);
-
         assert_eq!(neighbours, 4);
-    }
-
-    #[test]
-    fn can_count_torus_neighbours_at_bottom_right_of_oblong_grid() {
-        let g = make_oblong_grid();
 
         let neighbours = torus_neighbours(&g, 4, 2);
+        assert_eq!(neighbours, 1);
 
+        let neighbours = torus_neighbours(&g, 0, 0);
         assert_eq!(neighbours, 1);
     }
 
     #[test]
-    fn can_count_torus_neighbours_at_top_left_of_oblong_grid() {
+    fn can_count_terminal_neighbours_on_oblong_grid() {
         let g = make_oblong_grid();
 
-        let neighbours = torus_neighbours(&g, 0, 0);
-
+        let neighbours = terminal_neighbours(&g, 0, 0);
         assert_eq!(neighbours, 1);
+
+        let neighbours = terminal_neighbours(&g, 4, 2);
+        assert_eq!(neighbours, 1);
+
+        let neighbours = terminal_neighbours(&g, 2, 1);
+        assert_eq!(neighbours, 4);
     }
 
     #[test]
