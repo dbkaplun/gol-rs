@@ -382,6 +382,7 @@
 <span id="339">339</span>
 <span id="340">340</span>
 <span id="341">341</span>
+<span id="342">342</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Structures and functions used for constructing a Game of Live `World` which combines a `Grid` and a rule set.</span>
 <span class='doccomment'>//!</span>
@@ -480,11 +481,12 @@
                 <span class='ident'>prev</span>: <span class='prelude-val'>None</span> }
     }
 
-    <span class='doccomment'>/// Get the current grid</span>
+    <span class='doccomment'>/// Get a reference to the current grid</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>grid</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Grid</span> {
         <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>curr</span>
     }
 
+    <span class='doccomment'>/// Get a mutable reference to the current grid</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>grid_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Grid</span> {
         <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>curr</span>
     }
