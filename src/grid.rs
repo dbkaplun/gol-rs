@@ -19,57 +19,14 @@ impl Cell {
     }
 }
 
-/// Describes a static neighbour counting function.
-///
-/// This function accepts a Grid and a set of coordinates and
-/// and returns the neighbour count of those coordinates.
-pub type NeighboursFn = fn(grid: &Grid, coords: (usize, usize)) -> usize;
-
-/// Implements neighbour counting for a torus world.
-pub fn torus_neighbours(grid: &Grid, coords: (usize, usize)) -> usize {
-    let (x, y) = coords;
-
-    let offsets = &[-1, 0, 1];
-    let (w, h) = (grid.width(), grid.height());
-
-    offsets
-        .iter()
-        .flat_map(|x_off| offsets.iter().map(move |y_off| (*x_off, *y_off)))
-        .filter(|&offset| offset != (0, 0))
-        .map(|(x_off, y_off)| {
-            let y = offset_in_dim(h, y, y_off);
-            let x = offset_in_dim(w, x, x_off);
-            grid.cell_at(x, y)
-        })
-        .filter(|cell| cell.is_live())
-        .count()
-}
-
+#[derive(PartialEq, Clone)]
 /// An addressable grid of `Cell`s
 ///
 /// Provides a number of functions for constructing, modifying and walking `Cell` grids.
 pub struct Grid {
     width: usize,
     height: usize,
-    neighbours: NeighboursFn,
     cells: Vec<Cell>
-}
-
-impl Clone for Grid {
-    fn clone(&self) -> Self {
-        Grid {
-            width: self.width,
-            height: self.height,
-            neighbours: self.neighbours,
-            cells: self.cells.clone()
-        }
-    }
-}
-
-impl PartialEq for Grid {
-    fn eq(&self, other: &Grid) -> bool {
-        self.width == other.width && self.height == other.height && self.cells == other.cells
-    }
 }
 
 impl Grid {
@@ -80,7 +37,7 @@ impl Grid {
         if count != state.len() {
             panic!("Invalid height and width");
         }
-        Grid { width: width, height: height, cells: state, neighbours: torus_neighbours  }
+        Grid { width: width, height: height, cells: state  }
     }
 
     /// Constructs a Grid of `width` and `height` using a factory function.
@@ -89,19 +46,13 @@ impl Grid {
     {
         let count = width * height;
         let cells = (0..count).map(|i| f(i % width, i / width)).collect();
-        Grid { width: width, height: height, cells: cells, neighbours: torus_neighbours }
+        Grid { width: width, height: height, cells: cells }
     }
 
     /// Constructs a dead grid of `width` and `height`
     pub fn create_dead(width: usize, height: usize) -> Grid {
         let count = width * height;
-        Grid { width: width, height: height, cells: vec![Cell::Dead; count], neighbours: torus_neighbours }
-    }
-
-    // Sets the neighbour counting function for this grid
-    #[inline]
-    pub fn set_neighbours_fn(&mut self, neighbours: NeighboursFn) {
-        self.neighbours = neighbours;
+        Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
     }
 
     /// Gets the width of this `Grid`
@@ -153,12 +104,6 @@ impl Grid {
                 self.set_cell(grid_x, grid_y, cell.clone());
             }
         }
-    }
-
-    /// Count the number of neighbours the `Cell` at the given
-    /// coordinates has.
-    pub fn count_neighbours(&self, x: usize, y: usize) -> usize {
-        (self.neighbours)(self, (x, y))
     }
 
     /// Returns an iterator over rows in this `Grid`
@@ -233,51 +178,10 @@ impl <'a> Iterator for CellIter<'a> {
     }
 }
 
-type Delta = isize;
-
-/// Utility function to calculate a new index within a torus dimension of `dimension_size`
-/// based on a `current_index` and a `delta`.
-fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> usize {
-
-    match delta {
-        n if n < 0 => {
-            //convert to unsigned representing a subtraction
-            let to_subtract = n.abs() as usize;
-
-            if current_index >= to_subtract {
-                current_index - to_subtract
-            }
-            else {
-                //wrap to end of dimension
-                dimension_size - (to_subtract - current_index)
-            }
-        },
-        0 => {
-            current_index
-        },
-        n if n > 0 => {
-            //convert to unsigned representing an addition
-            let to_add = n.abs() as usize;
-
-            let delta_to_end = dimension_size - current_index;
-            if delta_to_end > to_add {
-                current_index + to_add
-            }
-            else {
-                //wrap to beginning of dimension
-                to_add - delta_to_end
-            }
-        },
-        _ => {
-            panic!(format!("Unexpected delta: {}", delta))
-        }
-    }
-}
-
 #[cfg(test)]
 pub mod tests {
 
-    use super::{ Grid, Delta };
+    use super::{ Grid };
     use super::Cell::{ Live, Dead };
 
     pub fn make_square_grid() -> Grid {
@@ -392,103 +296,6 @@ pub mod tests {
         let state = vec![Dead; 99];
 
         Grid::from_raw(10, 10, state);
-    }
-
-
-    #[test]
-    fn can_count_neighbours_on_square_grid() {
-
-        let g = make_square_grid();
-
-        let neighbours = g.count_neighbours(1, 1);
-
-        assert_eq!(neighbours, 8);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_pipe_grid() {
-
-        let g = make_pipe_grid();
-
-        let neighbours = g.count_neighbours(2, 1);
-
-        assert_eq!(neighbours, 3);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_edge_of_pipe_grid() {
-
-        let g = make_pipe_grid();
-
-        let neighbours = g.count_neighbours(0, 1);
-
-        assert_eq!(neighbours, 3);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_lonely_grid() {
-
-        let g = make_lonely_grid();
-
-        let neighbours = g.count_neighbours(1, 1);
-
-        assert_eq!(neighbours, 0);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_oblong_grid() {
-        let g = make_oblong_grid();
-
-        let neighbours = g.count_neighbours(2, 1);
-
-        assert_eq!(neighbours, 4);
-    }
-
-    #[test]
-    fn can_count_neighbours_at_bottom_right_of_oblong_grid() {
-        let g = make_oblong_grid();
-
-        let neighbours = g.count_neighbours(4, 2);
-
-        assert_eq!(neighbours, 1);
-    }
-
-    #[test]
-    fn can_count_neighbours_at_top_left_of_oblong_grid() {
-        let g = make_oblong_grid();
-
-        let neighbours = g.count_neighbours(0, 0);
-
-        assert_eq!(neighbours, 1);
-    }
-
-    #[test]
-    fn can_calculate_index() {
-
-        //Verify that offset_in_dim correctly wraps the world
-
-        //Middle of dimension
-        assert_eq!(super::offset_in_dim(10, 5, (6 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 5, (4 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 5, (1 as Delta)), 6);
-        assert_eq!(super::offset_in_dim(10, 5, (0 as Delta)), 5);
-        assert_eq!(super::offset_in_dim(10, 5, (-1 as Delta)), 4);
-        assert_eq!(super::offset_in_dim(10, 5, (-4 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 5, (-6 as Delta)), 9);
-
-        //End of dimension
-        assert_eq!(super::offset_in_dim(10, 9, (2 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 9, (1 as Delta)), 0);
-        assert_eq!(super::offset_in_dim(10, 9, (0 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 9, (-1 as Delta)), 8);
-        assert_eq!(super::offset_in_dim(10, 9, (-2 as Delta)), 7);
-
-        //Start of dimension
-        assert_eq!(super::offset_in_dim(10, 0, (2 as Delta)), 2);
-        assert_eq!(super::offset_in_dim(10, 0, (1 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 0, (0 as Delta)),    0);
-        assert_eq!(super::offset_in_dim(10, 0, (-1 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 0, (-2 as Delta)), 8);
     }
 
 }

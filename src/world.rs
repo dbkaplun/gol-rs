@@ -6,7 +6,7 @@ use std::iter::Iterator;
 
 use grid::{ Grid };
 use grid;
-use rules::{ RulesFn };
+use rules::{ RulesFn, NeighboursFn };
 use rules;
 
 /// Provides hosting for a basic Game of Life simulation. Includes functions for modifying
@@ -14,6 +14,7 @@ use rules;
 pub struct World {
     gen: i64,
     rules: RulesFn,
+    neighbours: NeighboursFn,
     curr: Grid,
     prev: Option<Grid>,
 }
@@ -22,12 +23,19 @@ impl World {
 
     /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
-        World { gen: 0, rules: rules::standard_rules, curr: grid, prev: None  }
+        World { gen: 0,
+                rules: rules::standard_rules, neighbours: rules::torus_neighbours,
+                curr: grid, prev: None  }
     }
 
-    /// Constructs a new `World` with the given `Grid` and `RulesFn`
-    pub fn new_with_rules(grid: Grid, rules: RulesFn) -> World {
-        World { gen: 0, rules: rules, curr: grid, prev: None }
+    /// Sets the rules function
+    pub fn set_rules(&mut self, rules: RulesFn) {
+        self.rules = rules;
+    }
+
+    /// Sets the neighbours function
+    pub fn set_neighbours(&mut self, neighbours: NeighboursFn) {
+        self.neighbours = neighbours;
     }
 
     /// Gets the current generation for this `World`
@@ -51,17 +59,16 @@ impl World {
     /// Executes a single step of this `World` in place
     pub fn step_mut(&mut self) {
         use std::mem::swap;
+        let curr = &mut self.curr;
         // Allocate prev?
         if self.prev.is_none() {
-            let (w, h) = (self.width(), self.height());
-            self.prev = Some(Grid::create_dead(w, h));
+            self.prev = Some(curr.clone());
         }
-        let curr = &mut self.curr;
         let next = self.prev.as_mut().unwrap();
         // Generate the next world state from the current
         for (x, y, cell) in curr.iter_cells() {
-            let neighbours = curr.count_neighbours(x, y);
-            let new_cell = (self.rules)(&cell, neighbours);
+            let neighbours = (self.neighbours)(curr, x, y);
+            let new_cell = (self.rules)(cell, neighbours);
             next.set_cell(x, y, new_cell);
         }
         // ...and swap the two values
@@ -76,13 +83,15 @@ impl World {
             self.curr
                 .iter_cells()
                 .map(|(x, y, cell)| {
-                    let neighbours = self.curr.count_neighbours(x, y);
+                    let neighbours = (self.neighbours)(&self.curr, x, y);
                     (self.rules)(cell, neighbours)
                 })
                 .collect();
 
         let next = Grid::from_raw(self.width(), self.height(), next);
-        World { gen: self.gen + 1, rules: self.rules,
+        World { gen: self.gen + 1,
+                rules: self.rules,
+                neighbours: self.neighbours,
                 curr: next,
                 prev: None }
     }
@@ -324,7 +333,10 @@ mod tests {
     fn bench_standard_rules(b: &mut Bencher) {
 
         let grid = make_even_grid(500, 500);
-        let mut world = World::new_with_rules(grid, rules::standard_rules);
+        let mut world = World::new(grid);
+
+        world.set_rules(rules::standard_rules);
+        world.set_neighbours(rules::torus_neighbours);
 
         b.iter(|| world.step_mut());
     }
