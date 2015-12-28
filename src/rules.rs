@@ -44,6 +44,54 @@ pub fn torus_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
         .count()
 }
 
+/// Implements neighbour counting for a terminal world.
+pub fn terminal_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
+    #[derive(PartialEq)]
+    enum O { Prev, None, Next }
+
+    fn apply(o: &O, dim: usize) -> usize {
+        match o {
+            &O::Prev => dim - 1 ,
+            &O::None => dim ,
+            &O::Next => dim + 1
+        }
+    }
+
+    let offsets: &[O; 3] = &[O::Prev, O::None, O::Next];
+    let (w, h) = (grid.width(), grid.height());
+
+    let mut count = 0;
+
+    for y_off in offsets {
+        for x_off in offsets {
+
+            if *y_off == O::None && *x_off == O::None {
+                //Don't count "this" cell
+                continue;
+            }
+
+            let is_cell_out_of_range =
+                y == 0       && *y_off == O::Prev ||
+                y == (h - 1) && *y_off == O::Next ||
+                x == 0       && *x_off == O::Prev ||
+                x == (w - 1) && *x_off == O::Next;
+
+            if is_cell_out_of_range {
+                //Count cell as dead
+                continue;
+            }
+
+            let x = apply(x_off, x);
+            let y = apply(y_off, y);
+
+            if grid.cell_at(x, y).is_live() {
+                count += 1;
+            }
+        }
+    }
+
+    count
+}
 
 type Delta = isize;
 
@@ -89,6 +137,81 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
 #[cfg(test)]
 mod tests {
 
+    use super::{ torus_neighbours };
+
+    use grid::tests::{ make_square_grid,
+                       make_pipe_grid,
+                       make_oblong_grid,
+                       make_lonely_grid };
+
+
+    #[test]
+    fn can_count_torus_neighbours_on_square_grid() {
+
+        let g = make_square_grid();
+
+        let neighbours = torus_neighbours(&g, 1, 1);
+
+        assert_eq!(neighbours, 8);
+    }
+
+    #[test]
+        fn can_count_torus_neighbours_on_pipe_grid() {
+
+        let g = make_pipe_grid();
+
+        let neighbours = torus_neighbours(&g, 2, 1);
+
+        assert_eq!(neighbours, 3);
+    }
+
+    #[test]
+    fn can_count_torus_neighbours_on_edge_of_pipe_grid() {
+
+        let g = make_pipe_grid();
+
+        let neighbours = torus_neighbours(&g, 0, 1);
+
+        assert_eq!(neighbours, 3);
+    }
+
+    #[test]
+    fn can_count_torus_neighbours_on_lonely_grid() {
+
+        let g = make_lonely_grid();
+
+        let neighbours = torus_neighbours(&g, 1, 1);
+
+        assert_eq!(neighbours, 0);
+    }
+
+    #[test]
+    fn can_count_torus_neighbours_on_oblong_grid() {
+        let g = make_oblong_grid();
+
+        let neighbours = torus_neighbours(&g, 2, 1);
+
+        assert_eq!(neighbours, 4);
+    }
+
+    #[test]
+    fn can_count_torus_neighbours_at_bottom_right_of_oblong_grid() {
+        let g = make_oblong_grid();
+
+        let neighbours = torus_neighbours(&g, 4, 2);
+
+        assert_eq!(neighbours, 1);
+    }
+
+    #[test]
+    fn can_count_torus_neighbours_at_top_left_of_oblong_grid() {
+        let g = make_oblong_grid();
+
+        let neighbours = torus_neighbours(&g, 0, 0);
+
+        assert_eq!(neighbours, 1);
+    }
+
     #[test]
     fn can_calculate_index() {
         use super::{ Delta };
@@ -119,73 +242,4 @@ mod tests {
         assert_eq!(super::offset_in_dim(10, 0, (-2 as Delta)), 8);
     }
 
-    /*
-
-
-    #[test]
-    fn can_count_neighbours_on_square_grid() {
-
-        let g = make_square_grid();
-
-        let neighbours = g.count_neighbours(1, 1);
-
-        assert_eq!(neighbours, 8);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_pipe_grid() {
-
-        let g = make_pipe_grid();
-
-        let neighbours = g.count_neighbours(2, 1);
-
-        assert_eq!(neighbours, 3);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_edge_of_pipe_grid() {
-
-        let g = make_pipe_grid();
-
-        let neighbours = g.count_neighbours(0, 1);
-
-        assert_eq!(neighbours, 3);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_lonely_grid() {
-
-        let g = make_lonely_grid();
-
-        let neighbours = g.count_neighbours(1, 1);
-
-        assert_eq!(neighbours, 0);
-    }
-
-    #[test]
-    fn can_count_neighbours_on_oblong_grid() {
-        let g = make_oblong_grid();
-
-        let neighbours = g.count_neighbours(2, 1);
-
-        assert_eq!(neighbours, 4);
-    }
-
-    #[test]
-    fn can_count_neighbours_at_bottom_right_of_oblong_grid() {
-        let g = make_oblong_grid();
-
-        let neighbours = g.count_neighbours(4, 2);
-
-        assert_eq!(neighbours, 1);
-    }
-
-    #[test]
-    fn can_count_neighbours_at_top_left_of_oblong_grid() {
-        let g = make_oblong_grid();
-
-        let neighbours = g.count_neighbours(0, 0);
-
-        assert_eq!(neighbours, 1);
-    }*/
 }
