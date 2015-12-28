@@ -122,10 +122,10 @@ impl Debug for Grid {
 
         try!(write!(f, "{}x{} grid:", self.width, self.height));
 
-        for row in (RowIter { grid: self, row: 0 }) {
+        for row in self.iter_rows() {
             try!(write!(f, "\n"));
             for cell in row {
-                try!(write!(f, "{}", if cell.is_live() { "O" } else { "." }));
+                try!(write!(f, "{}", if cell.is_live() { "#" } else { "." }));
             }
         }
 
