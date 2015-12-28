@@ -382,8 +382,6 @@
 <span id="339">339</span>
 <span id="340">340</span>
 <span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Structures and functions used for constructing a Game of Live `World` which combines a `Grid` and a rule set.</span>
 <span class='doccomment'>//!</span>
@@ -392,7 +390,6 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
 
 <span class='kw'>use</span> <span class='ident'>grid</span>::{ <span class='ident'>Grid</span> };
-<span class='kw'>use</span> <span class='ident'>grid</span>;
 <span class='kw'>use</span> <span class='ident'>rules</span>::{ <span class='ident'>RulesFn</span>, <span class='ident'>NeighboursFn</span> };
 <span class='kw'>use</span> <span class='ident'>rules</span>;
 
@@ -483,14 +480,13 @@
                 <span class='ident'>prev</span>: <span class='prelude-val'>None</span> }
     }
 
-    <span class='doccomment'>/// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>write_cells</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>x</span>: <span class='ident'>usize</span>, <span class='ident'>y</span>: <span class='ident'>usize</span>, <span class='ident'>data</span>: <span class='kw-2'>&amp;</span><span class='ident'>Grid</span>) {
-        <span class='self'>self</span>.<span class='ident'>curr</span>.<span class='ident'>write_cells</span>(<span class='ident'>x</span>, <span class='ident'>y</span>, <span class='ident'>data</span>);
+    <span class='doccomment'>/// Get the current grid</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>grid</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>Grid</span> {
+        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>curr</span>
     }
 
-    <span class='doccomment'>/// Returns an iterator over rows in this world</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter_rows</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>grid</span>::<span class='ident'>RowIter</span> {
-        <span class='self'>self</span>.<span class='ident'>curr</span>.<span class='ident'>iter_rows</span>()
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>grid_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Grid</span> {
+        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>curr</span>
     }
 }
 
@@ -637,7 +633,7 @@
 
         <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='ident'>make_oblong_world</span>();
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iter</span> <span class='op'>=</span> <span class='ident'>w</span>.<span class='ident'>iter_rows</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iter</span> <span class='op'>=</span> <span class='ident'>w</span>.<span class='ident'>grid</span>().<span class='ident'>iter_rows</span>();
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>iter</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>(), <span class='kw-2'>&amp;</span>[<span class='ident'>X</span>, <span class='ident'>X</span>, <span class='ident'>O</span>, <span class='ident'>X</span>, <span class='ident'>X</span>]);
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>iter</span>.<span class='ident'>next</span>().<span class='ident'>unwrap</span>(), <span class='kw-2'>&amp;</span>[<span class='ident'>X</span>, <span class='ident'>O</span>, <span class='ident'>X</span>, <span class='ident'>O</span>, <span class='ident'>X</span>]);
@@ -689,14 +685,14 @@
 
         <span class='comment'>//write from top left</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='ident'>make_lonely_world</span>();
-        <span class='ident'>w</span>.<span class='ident'>write_cells</span>(<span class='number'>0</span>, <span class='number'>0</span>, <span class='kw-2'>&amp;</span><span class='ident'>new_data</span>);
+        <span class='ident'>w</span>.<span class='ident'>grid_mut</span>().<span class='ident'>write_cells</span>(<span class='number'>0</span>, <span class='number'>0</span>, <span class='kw-2'>&amp;</span><span class='ident'>new_data</span>);
 
         <span class='comment'>//NOTE: Overwrites entire world</span>
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='kw-2'>&amp;</span><span class='ident'>w</span>.<span class='ident'>curr</span>, <span class='kw-2'>&amp;</span><span class='ident'>new_data</span>);
 
         <span class='comment'>//write from bottom right</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='ident'>make_lonely_world</span>();
-        <span class='ident'>w</span>.<span class='ident'>write_cells</span>(<span class='number'>2</span>, <span class='number'>2</span>, <span class='kw-2'>&amp;</span><span class='ident'>new_data</span>);
+        <span class='ident'>w</span>.<span class='ident'>grid_mut</span>().<span class='ident'>write_cells</span>(<span class='number'>2</span>, <span class='number'>2</span>, <span class='kw-2'>&amp;</span><span class='ident'>new_data</span>);
 
         <span class='comment'>//NOTE: Overwrites bottom corner</span>
         <span class='kw'>let</span> <span class='ident'>expected</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>Grid</span>::<span class='ident'>from_raw</span>(<span class='number'>3</span>, <span class='number'>3</span>, <span class='macro'>vec</span><span class='macro'>!</span>[

@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-311' class='srclink' href='../../src/gol/world.rs.html#14-20' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-310' class='srclink' href='../../src/gol/world.rs.html#13-19' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct World {
     // some fields omitted
 }</pre><div class='docblock'><p>Provides hosting for a basic Game of Life simulation. Includes functions for modifying
@@ -67,11 +67,10 @@ the world and stepping the simulation both immutably and in-place.</p>
 <div class='docblock'><p>Executes a single step of this <code>World</code> in place</p>
 </div><h4 id='method.step' class='method'><code>fn <a href='#method.step' class='fnname'>step</a>(&amp;self) -&gt; <a class='struct' href='../../gol/world/struct.World.html' title='gol::world::World'>World</a></code></h4>
 <div class='docblock'><p>Executes a single step of this <code>World</code> and returns a new, modified world</p>
-</div><h4 id='method.write_cells' class='method'><code>fn <a href='#method.write_cells' class='fnname'>write_cells</a>(&amp;mut self, x: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, y: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, data: &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a>)</code></h4>
-<div class='docblock'><p>Overwrite the cells starting at coords <code>(x, y)</code> with the data in the given <code>Grid</code></p>
-</div><h4 id='method.iter_rows' class='method'><code>fn <a href='#method.iter_rows' class='fnname'>iter_rows</a>(&amp;self) -&gt; <a class='struct' href='../../gol/grid/struct.RowIter.html' title='gol::grid::RowIter'>RowIter</a></code></h4>
-<div class='docblock'><p>Returns an iterator over rows in this world</p>
-</div></div></section>
+</div><h4 id='method.grid' class='method'><code>fn <a href='#method.grid' class='fnname'>grid</a>(&amp;self) -&gt; &amp;<a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
+<div class='docblock'><p>Get the current grid</p>
+</div><h4 id='method.grid_mut' class='method'><code>fn <a href='#method.grid_mut' class='fnname'>grid_mut</a>(&amp;mut self) -&gt; &amp;mut <a class='struct' href='../../gol/grid/struct.Grid.html' title='gol::grid::Grid'>Grid</a></code></h4>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
