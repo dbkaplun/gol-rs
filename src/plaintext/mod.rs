@@ -14,7 +14,6 @@ use std::io;
 use std::fmt;
 use std::convert;
 use std::iter;
-use std::error::Error;
 
 /// Struct for the contents of a PlainText format Game of Life file.
 ///
