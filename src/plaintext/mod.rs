@@ -71,7 +71,11 @@ impl convert::From<io::Error> for ParseError {
 pub type ParseResult = result::Result<PlainText, ParseError>;
 
 fn sub_string_from(source: &str, from: usize) -> Option<&str> {
-    source.char_indices().nth(from).map(|(char_idx, _)| &source[char_idx..])
+    let len = source.len();
+    if len == 0 || len <= from {
+        return None;
+    }
+    Some(&source[from..])
 }
 
 /// Parses the [PlainText](http://conwaylife.com/wiki/PlainText) format from a buffered stream
@@ -171,6 +175,22 @@ mod tests {
 
     use std::io;
     use grid::Cell::{ Live, Dead };
+
+    #[test]
+    fn sub_string_from_tests() {
+
+        use super::sub_string_from;
+
+        assert_eq!(Some("a"), sub_string_from("a", 0));
+
+        assert_eq!(None, sub_string_from("", 0));
+        assert_eq!(None, sub_string_from("", 1));
+
+        assert_eq!(Some("abc"), sub_string_from("abc", 0));
+        assert_eq!(Some("bc"),  sub_string_from("abc", 1));
+        assert_eq!(None,        sub_string_from("abc", 3));
+        assert_eq!(None,        sub_string_from("abc", 4));
+    }
 
     #[test]
     fn can_parse_simple_plaintext() {
