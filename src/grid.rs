@@ -1,12 +1,12 @@
 //! The grid module provides `Grid` for working with a "torus world" grid of cells.
 
-use std::fmt::{Debug, Error, Formatter};
+use std::fmt::{Debug, Display, Error, Formatter};
 use std::iter::Iterator;
 use std::option::Option;
 use std::vec::Vec;
 
 /// Represents a single Cell, alive or dead
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum Cell {
     Live,
     Dead,
@@ -28,7 +28,13 @@ impl Cell {
     }
 }
 
-#[derive(PartialEq, Clone)]
+impl Display for Cell {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        write!(f, "{}", if self.is_live() { "O" } else { "." })
+    }
+}
+
+#[derive(PartialEq, Eq, Hash, Clone)]
 /// An addressable grid of `Cell`s
 ///
 /// Provides a number of functions for constructing, modifying and walking `Cell` grids.
@@ -142,15 +148,20 @@ impl Grid {
 
 impl Debug for Grid {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        try!(write!(f, "{}x{} grid:", self.width, self.height));
+        write!(f, "!{}x{} grid:\n{}", self.width, self.height, self)
+    }
+}
 
-        for row in self.iter_rows() {
-            try!(write!(f, "\n"));
+impl Display for Grid {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        for (i, row) in self.iter_rows().enumerate() {
+            if i != 0 {
+                try!(write!(f, "\n"));
+            }
             for cell in row {
-                try!(write!(f, "{}", if cell.is_live() { "#" } else { "." }));
+                try!(write!(f, "{}", cell));
             }
         }
-
         Ok(())
     }
 }
@@ -203,6 +214,7 @@ impl<'a> Iterator for CellIter<'a> {
 pub mod tests {
     use super::Cell::{Dead, Live};
     use super::Grid;
+    use std::fmt::Write;
 
     pub fn make_square_grid() -> Grid {
         use super::Cell::Dead as X;
@@ -308,6 +320,20 @@ pub mod tests {
         for cell in &grid.cells {
             assert_eq!(&Dead, cell)
         }
+    }
+
+    #[test]
+    fn can_debug_grid() {
+        let mut output = String::new();
+        write!(&mut output, "{:?}", make_oblong_grid()).unwrap();
+        assert_eq!(output, "!5x3 grid:\n..O..\n.O.O.\n..O..");
+    }
+
+    #[test]
+    fn can_display_grid() {
+        let mut output = String::new();
+        write!(&mut output, "{}", make_oblong_grid()).unwrap();
+        assert_eq!(output, "..O..\n.O.O.\n..O..");
     }
 
     #[test]

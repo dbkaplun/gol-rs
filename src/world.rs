@@ -10,6 +10,7 @@ use rules::{NeighboursFn, RulesFn};
 
 /// Provides hosting for a basic Game of Life simulation. Includes functions for modifying
 /// the world and stepping the simulation both immutably and in-place.
+#[derive(Clone)]
 pub struct World {
     gen: i64,
     rules: RulesFn,
