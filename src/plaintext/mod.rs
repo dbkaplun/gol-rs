@@ -78,7 +78,7 @@ fn sub_string_from(source: &str, from: usize) -> Option<&str> {
     Some(&source[from..])
 }
 
-/// Parses the [`PlainText`](http://conwaylife.com/wiki/PlainText) format from a buffered stream
+/// Parses the [`PlainText`](http://conwaylife.com/w/index.php?title=Plaintext) format from a buffered stream
 pub fn parse_plaintext<R>(reader: R) -> ParseResult
 where
     R: io::BufRead,
@@ -100,11 +100,16 @@ where
 
     for line in reader.lines() {
         let line = try!(line);
+        let line = line.trim_left();
+        if line.is_empty() {
+            continue;
+        }
+
         if state == S::Name {
             if !line.starts_with("!Name:") {
                 return Err(ParseError::NameLineMissing);
             }
-            let line = sub_string_from(&line, 6).unwrap_or("").trim();
+            let line = sub_string_from(line, 6).unwrap_or("").trim();
             name.push_str(line);
             state = S::Comment;
             continue;
@@ -114,7 +119,7 @@ where
                 state = S::Body;
             } else if line.starts_with("!Padding:") {
                 //special padding extension
-                let line = sub_string_from(&line, 9).unwrap_or("").trim();
+                let line = sub_string_from(line, 9).unwrap_or("").trim();
                 if let Ok(p) = line.parse() {
                     padding = p;
                 }
@@ -122,7 +127,7 @@ where
                 if !comment.is_empty() {
                     comment.push_str("\n");
                 }
-                let line = sub_string_from(&line, 1).unwrap_or("").trim();
+                let line = sub_string_from(line, 1).unwrap_or("").trim();
                 comment.push_str(line);
             }
         }
@@ -258,6 +263,44 @@ O.
             X, X, X, O, X, X,
             X, X, O, X, X, X,
             X, X, X, X, X, X,
+        ];
+
+        for (left, right) in value.data.iter_cells().zip(expected) {
+            assert_eq!(left.2, &right)
+        }
+    }
+
+    #[test]
+    fn can_parse_simple_plaintext_with_leading_whitespace() {
+        const PLAINTEXT: &'static str = "
+            !Name: Glider
+            !
+            ! This is a comment
+            .O.
+            ..O
+            OOO
+        ";
+
+        let bytes = PLAINTEXT.to_string().into_bytes();
+        let cursor = io::Cursor::new(bytes);
+        let read = io::BufReader::new(cursor);
+
+        let result = super::parse_plaintext(read);
+
+        assert!(result.is_ok(), "Result is not Ok");
+
+        let value = result.unwrap();
+
+        assert_eq!(value.name, "Glider");
+        assert_eq!(value.comment, "This is a comment");
+        assert_eq!(value.data.width(), 3);
+        assert_eq!(value.data.height(), 3);
+
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let expected = vec![
+            X, O, X,
+            X, X, O,
+            O, O, O,
         ];
 
         for (left, right) in value.data.iter_cells().zip(expected) {
