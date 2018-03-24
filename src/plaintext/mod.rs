@@ -1,25 +1,25 @@
-//! Module for parsing the [PlainText](http://conwaylife.com/wiki/PlainText) Game of Life
+//! Module for parsing the [`PlainText`](http://conwaylife.com/wiki/PlainText) Game of Life
 //! file format into a `Grid`.
 
 mod padding;
 
-use grid::{ Cell, Grid };
 use grid::Cell::*;
+use grid::{Cell, Grid};
 
 use self::padding::Padding;
 
-use std::vec::Vec;
-use std::result;
-use std::io;
-use std::fmt;
 use std::convert;
+use std::fmt;
+use std::io;
 use std::iter;
+use std::result;
+use std::vec::Vec;
 
-/// Struct for the contents of a PlainText format Game of Life file.
+/// Struct for the contents of a `PlainText` format Game of Life file.
 ///
 /// # Optional padding syntax
 ///
-/// The PlainText parser also provides a `Padding` extension, e.g.:
+/// The `PlainText` parser also provides a `Padding` extension, e.g.:
 ///
 /// ```text
 /// !Name: Example
@@ -39,15 +39,15 @@ use std::iter;
 pub struct PlainText {
     pub name: String,
     pub comment: String,
-    pub data: Grid
+    pub data: Grid,
 }
 
-/// Represents any errors which occur during the PlainText parsing process
+/// Represents any errors which occur during the `PlainText` parsing process
 #[derive(Debug)]
 pub enum ParseError {
     Io(io::Error),
     NameLineMissing,
-    Invalid
+    Invalid,
 }
 
 impl fmt::Display for ParseError {
@@ -67,7 +67,7 @@ impl convert::From<io::Error> for ParseError {
     }
 }
 
-/// Represents the result of a PlainText parse operation
+/// Represents the result of a `PlainText` parse operation
 pub type ParseResult = result::Result<PlainText, ParseError>;
 
 fn sub_string_from(source: &str, from: usize) -> Option<&str> {
@@ -78,12 +78,17 @@ fn sub_string_from(source: &str, from: usize) -> Option<&str> {
     Some(&source[from..])
 }
 
-/// Parses the [PlainText](http://conwaylife.com/wiki/PlainText) format from a buffered stream
+/// Parses the [`PlainText`](http://conwaylife.com/wiki/PlainText) format from a buffered stream
 pub fn parse_plaintext<R>(reader: R) -> ParseResult
-    where R: io::BufRead
+where
+    R: io::BufRead,
 {
     #[derive(PartialEq)]
-    enum S { Name, Comment, Body }
+    enum S {
+        Name,
+        Comment,
+        Body,
+    }
 
     let mut state = S::Name;
 
@@ -105,18 +110,16 @@ pub fn parse_plaintext<R>(reader: R) -> ParseResult
             continue;
         }
         if state == S::Comment {
-            if !line.starts_with("!") {
+            if !line.starts_with('!') {
                 state = S::Body;
-            }
-            else if line.starts_with("!Padding:") {
+            } else if line.starts_with("!Padding:") {
                 //special padding extension
                 let line = sub_string_from(&line, 9).unwrap_or("").trim();
                 if let Ok(p) = line.parse() {
                     padding = p;
                 }
-            }
-            else {
-                if comment.len() != 0 {
+            } else {
+                if !comment.is_empty() {
                     comment.push_str("\n");
                 }
                 let line = sub_string_from(&line, 1).unwrap_or("").trim();
@@ -129,13 +132,12 @@ pub fn parse_plaintext<R>(reader: R) -> ParseResult
                 match c {
                     'O' => row.push(Live),
                     '.' => row.push(Dead),
-                     _  => return Err(ParseError::Invalid),
+                    _ => return Err(ParseError::Invalid),
                 }
             }
-            if rows.len() == 0 {
+            if rows.is_empty() {
                 width = row.len();
-            }
-            else if width != row.len() {
+            } else if width != row.len() {
                 return Err(ParseError::Invalid);
             }
             rows.push(row);
@@ -145,14 +147,13 @@ pub fn parse_plaintext<R>(reader: R) -> ParseResult
     let grid = pad_and_create_grid(rows, width, padding);
 
     Ok(PlainText {
-        name: name,
-        comment: comment,
-        data: grid
+        name,
+        comment,
+        data: grid,
     })
 }
 
 fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, p: Padding) -> Grid {
-
     let width = width + p.left + p.right;
     let height = rows.len() + p.top + p.bottom;
 
@@ -172,13 +173,11 @@ fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, p: Padding) -> Grid {
 
 #[cfg(test)]
 mod tests {
-
+    use grid::Cell::{Dead as X, Live as O};
     use std::io;
-    use grid::Cell::{ Live, Dead };
 
     #[test]
     fn sub_string_from_tests() {
-
         use super::sub_string_from;
 
         assert_eq!(Some("a"), sub_string_from("a", 0));
@@ -187,14 +186,13 @@ mod tests {
         assert_eq!(None, sub_string_from("", 1));
 
         assert_eq!(Some("abc"), sub_string_from("abc", 0));
-        assert_eq!(Some("bc"),  sub_string_from("abc", 1));
-        assert_eq!(None,        sub_string_from("abc", 3));
-        assert_eq!(None,        sub_string_from("abc", 4));
+        assert_eq!(Some("bc"), sub_string_from("abc", 1));
+        assert_eq!(None, sub_string_from("abc", 3));
+        assert_eq!(None, sub_string_from("abc", 4));
     }
 
     #[test]
     fn can_parse_simple_plaintext() {
-
         const PLAINTEXT: &'static str = "!Name: Tumbler
 !
 ! This is a comment
@@ -217,9 +215,10 @@ O.
         assert_eq!(value.data.width(), 2);
         assert_eq!(value.data.height(), 2);
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = vec![
-            Dead, Live,
-            Live, Dead
+            X, O,
+            O, X,
         ];
 
         for (left, right) in value.data.iter_cells().zip(expected) {
@@ -229,7 +228,6 @@ O.
 
     #[test]
     fn can_parse_simple_plaintext_with_padding() {
-
         const PLAINTEXT: &'static str = "!Name: Tumbler
 !Padding: 1,2
 !
@@ -254,11 +252,12 @@ O.
         assert_eq!(value.data.width(), 4 + 2);
         assert_eq!(value.data.height(), 2 + 2);
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = vec![
-            Dead, Dead, Dead, Dead, Dead, Dead,
-            Dead, Dead, Dead, Live, Dead, Dead,
-            Dead, Dead, Live, Dead, Dead, Dead,
-            Dead, Dead, Dead, Dead, Dead, Dead,
+            X, X, X, X, X, X,
+            X, X, X, O, X, X,
+            X, X, O, X, X, X,
+            X, X, X, X, X, X,
         ];
 
         for (left, right) in value.data.iter_cells().zip(expected) {
@@ -268,7 +267,6 @@ O.
 
     #[test]
     fn can_exclude_comment() {
-
         const PLAINTEXT: &'static str = "!Name: Tumbler\n.";
 
         let bytes = PLAINTEXT.to_string().into_bytes();
@@ -287,7 +285,6 @@ O.
 
     #[test]
     fn parse_fails_when_name_missing() {
-
         const PLAINTEXT: &'static str = ".";
 
         let bytes = PLAINTEXT.to_string().into_bytes();
@@ -301,7 +298,6 @@ O.
 
     #[test]
     fn parse_fails_when_invalid_chars_in_body() {
-
         const PLAINTEXT: &'static str = "...\nOzO\n...";
 
         let bytes = PLAINTEXT.to_string().into_bytes();

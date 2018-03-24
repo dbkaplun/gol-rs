@@ -4,9 +4,9 @@
 
 use std::iter::Iterator;
 
-use grid::{ Grid };
-use rules::{ RulesFn, NeighboursFn };
+use grid::Grid;
 use rules;
+use rules::{NeighboursFn, RulesFn};
 
 /// Provides hosting for a basic Game of Life simulation. Includes functions for modifying
 /// the world and stepping the simulation both immutably and in-place.
@@ -19,12 +19,15 @@ pub struct World {
 }
 
 impl World {
-
     /// Constructs a new `World` with the given `Grid`
     pub fn new(grid: Grid) -> World {
-        World { gen: 0,
-                rules: rules::standard_rules, neighbours: rules::torus_neighbours,
-                curr: grid, prev: None  }
+        World {
+            gen: 0,
+            rules: rules::standard_rules,
+            neighbours: rules::torus_neighbours,
+            curr: grid,
+            prev: None,
+        }
     }
 
     /// Sets the rules function
@@ -78,21 +81,22 @@ impl World {
     /// Executes a single step of this `World` and returns a new, modified world
     pub fn step(&self) -> World {
         // Generate the next world state from the current
-        let next =
-            self.curr
-                .iter_cells()
-                .map(|(x, y, cell)| {
-                    let neighbours = (self.neighbours)(&self.curr, x, y);
-                    (self.rules)(cell, neighbours)
-                })
-                .collect();
+        let next = self.curr
+            .iter_cells()
+            .map(|(x, y, cell)| {
+                let neighbours = (self.neighbours)(&self.curr, x, y);
+                (self.rules)(cell, neighbours)
+            })
+            .collect();
 
         let next = Grid::from_raw(self.width(), self.height(), next);
-        World { gen: self.gen + 1,
-                rules: self.rules,
-                neighbours: self.neighbours,
-                curr: next,
-                prev: None }
+        World {
+            gen: self.gen + 1,
+            rules: self.rules,
+            neighbours: self.neighbours,
+            curr: next,
+            prev: None,
+        }
     }
 
     /// Get a reference to the current grid
@@ -108,12 +112,11 @@ impl World {
 
 #[cfg(test)]
 mod tests {
-
+    use grid::Cell::{Dead, Live};
+    use grid::Grid;
+    use grid::tests as grid_test;
     use rules;
     use world::World;
-    use grid::{ Grid };
-    use grid::Cell::{ Live, Dead };
-    use grid::tests as grid_test;
 
     fn make_square_world() -> World {
         World::new(grid_test::make_square_grid())
@@ -135,10 +138,8 @@ mod tests {
         World::new(grid_test::make_glider_grid())
     }
 
-
     #[test]
     fn can_create_world_with_grid() {
-
         let grid = Grid::from_fn(10, 10, |_, _| Dead);
         let w = World::new(grid.clone());
         assert_eq!(0, w.gen);
@@ -154,6 +155,7 @@ mod tests {
 
         w.step_mut();
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = Grid::from_raw(4, 4, vec![
             X, X, X, X,
             O, X, O, O,
@@ -173,6 +175,7 @@ mod tests {
 
         let w2 = w.step();
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = Grid::from_raw(4, 4, vec![
             X, X, X, X,
             O, X, O, O,
@@ -182,7 +185,6 @@ mod tests {
 
         assert_eq!(&w2.curr, &expected);
     }
-
 
     #[test]
     fn can_increment_generation() {
@@ -211,6 +213,7 @@ mod tests {
         w.step_mut();
         w.step_mut();
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = Grid::from_raw(6, 5, vec![
             X, X, X, X, X, X,
             X, X, X, O, X, X,
@@ -233,6 +236,7 @@ mod tests {
         w.step_mut();
         w.step_mut();
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = Grid::from_raw(3, 3, vec![
             X, X, X,
             X, X, X,
@@ -259,7 +263,6 @@ mod tests {
 
     #[test]
     fn can_get_and_set_cell_in_grid() {
-
         let mut grid = Grid::create_dead(10, 10);
 
         assert_eq!(&Dead, grid.cell_at(2, 2));
@@ -270,18 +273,16 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected="out of range")]
+    #[should_panic(expected = "out of range")]
     fn get_cell_out_of_range_panics() {
-
         let grid = Grid::create_dead(10, 10);
 
         grid.cell_at(10, 10);
     }
 
     #[test]
-    #[should_panic(expected="out of range")]
+    #[should_panic(expected = "out of range")]
     fn set_cell_out_of_range_panics() {
-
         let mut grid = Grid::create_dead(10, 10);
 
         grid.set_cell(10, 10, Live);
@@ -289,10 +290,10 @@ mod tests {
 
     #[test]
     fn can_set_region_in_world() {
-
         use grid::Cell::Dead as X;
         use grid::Cell::Live as O;
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let new_data = Grid::from_raw(3, 3, vec![
             O, O, O,
             O, X, O,
@@ -311,13 +312,13 @@ mod tests {
         w.grid_mut().write_cells(2, 2, &new_data);
 
         //NOTE: Overwrites bottom corner
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let expected = &Grid::from_raw(3, 3, vec![
             X, X, X,
             X, O, X,
             X, X, O,
         ]);
         assert_eq!(&w.curr, expected);
-
     }
 
     // Benchmarks
@@ -330,7 +331,6 @@ mod tests {
 
     #[bench]
     fn bench_standard_rules(b: &mut Bencher) {
-
         let grid = make_even_grid(500, 500);
         let mut world = World::new(grid);
 

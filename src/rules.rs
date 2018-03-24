@@ -1,6 +1,6 @@
 //! Module containing functions implementing Game of Life rulesets.
 
-use grid::{ Grid, Cell };
+use grid::{Cell, Grid};
 
 /// Describes a static ruleset function.
 ///
@@ -12,13 +12,10 @@ pub type RulesFn = fn(cell: &Cell, neighbours: usize) -> Cell;
 /// of the Game of Life.
 pub fn standard_rules(cell: &Cell, neighbours: usize) -> Cell {
     match (cell, neighbours) {
-        (&Cell::Live, 3) |
-        (&Cell::Live, 2) |
-        (&Cell::Dead, 3) => Cell::Live,
-        ________________ => Cell::Dead
+        (&Cell::Live, 3) | (&Cell::Live, 2) | (&Cell::Dead, 3) => Cell::Live,
+        _ => Cell::Dead,
     }
 }
-
 
 /// Describes a static neighbour counting function.
 ///
@@ -47,13 +44,17 @@ pub fn torus_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
 /// Implements neighbour counting for a terminal world.
 pub fn terminal_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
     #[derive(PartialEq)]
-    enum O { Prev, None, Next }
+    enum O {
+        Prev,
+        None,
+        Next,
+    }
 
     fn apply(o: &O, dim: usize) -> usize {
-        match o {
-            &O::Prev => dim - 1 ,
-            &O::None => dim ,
-            &O::Next => dim + 1
+        match *o {
+            O::Prev => dim - 1,
+            O::None => dim,
+            O::Next => dim + 1,
         }
     }
 
@@ -64,12 +65,12 @@ pub fn terminal_neighbours(grid: &Grid, x: usize, y: usize) -> usize {
 
     for y_off in offsets {
         for x_off in offsets {
-
             if *y_off == O::None && *x_off == O::None {
                 //Don't count "this" cell
                 continue;
             }
 
+            #[cfg_attr(rustfmt, rustfmt_skip)]
             let is_cell_out_of_range =
                 y == 0       && *y_off == O::Prev ||
                 y == (h - 1) && *y_off == O::Next ||
@@ -98,7 +99,6 @@ type Delta = isize;
 /// Utility function to calculate a new index within a torus dimension of `dimension_size`
 /// based on a `current_index` and a `delta`.
 fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> usize {
-
     match delta {
         n if n < 0 => {
             //convert to unsigned representing a subtraction
@@ -106,15 +106,12 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
 
             if current_index >= to_subtract {
                 current_index - to_subtract
-            }
-            else {
+            } else {
                 //wrap to end of dimension
                 dimension_size - (to_subtract - current_index)
             }
-        },
-        0 => {
-            current_index
-        },
+        }
+        0 => current_index,
         n if n > 0 => {
             //convert to unsigned representing an addition
             let to_add = n.abs() as usize;
@@ -122,28 +119,20 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
             let delta_to_end = dimension_size - current_index;
             if delta_to_end > to_add {
                 current_index + to_add
-            }
-            else {
+            } else {
                 //wrap to beginning of dimension
                 to_add - delta_to_end
             }
-        },
-        _ => {
-            panic!(format!("Unexpected delta: {}", delta))
         }
+        _ => panic!(format!("Unexpected delta: {}", delta)),
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::{terminal_neighbours, torus_neighbours};
 
-    use super::{ torus_neighbours, terminal_neighbours };
-
-    use grid::tests::{ make_square_grid,
-                       make_pipe_grid,
-                       make_oblong_grid,
-                       make_lonely_grid };
-
+    use grid::tests::{make_lonely_grid, make_oblong_grid, make_pipe_grid, make_square_grid};
 
     #[test]
     fn can_count_torus_neighbours_on_square_grid() {
@@ -204,32 +193,31 @@ mod tests {
 
     #[test]
     fn can_calculate_index() {
-        use super::{ Delta };
+        use super::Delta;
 
         //Verify that offset_in_dim correctly wraps the world
 
         //Middle of dimension
-        assert_eq!(super::offset_in_dim(10, 5, (6 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 5, (4 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 5, (1 as Delta)), 6);
-        assert_eq!(super::offset_in_dim(10, 5, (0 as Delta)), 5);
-        assert_eq!(super::offset_in_dim(10, 5, (-1 as Delta)), 4);
-        assert_eq!(super::offset_in_dim(10, 5, (-4 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 5, (-6 as Delta)), 9);
+        assert_eq!(super::offset_in_dim(10, 5, 6 as Delta), 1);
+        assert_eq!(super::offset_in_dim(10, 5, 4 as Delta), 9);
+        assert_eq!(super::offset_in_dim(10, 5, 1 as Delta), 6);
+        assert_eq!(super::offset_in_dim(10, 5, 0 as Delta), 5);
+        assert_eq!(super::offset_in_dim(10, 5, -1 as Delta), 4);
+        assert_eq!(super::offset_in_dim(10, 5, -4 as Delta), 1);
+        assert_eq!(super::offset_in_dim(10, 5, -6 as Delta), 9);
 
         //End of dimension
-        assert_eq!(super::offset_in_dim(10, 9, (2 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 9, (1 as Delta)), 0);
-        assert_eq!(super::offset_in_dim(10, 9, (0 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 9, (-1 as Delta)), 8);
-        assert_eq!(super::offset_in_dim(10, 9, (-2 as Delta)), 7);
+        assert_eq!(super::offset_in_dim(10, 9, 2 as Delta), 1);
+        assert_eq!(super::offset_in_dim(10, 9, 1 as Delta), 0);
+        assert_eq!(super::offset_in_dim(10, 9, 0 as Delta), 9);
+        assert_eq!(super::offset_in_dim(10, 9, -1 as Delta), 8);
+        assert_eq!(super::offset_in_dim(10, 9, -2 as Delta), 7);
 
         //Start of dimension
-        assert_eq!(super::offset_in_dim(10, 0, (2 as Delta)), 2);
-        assert_eq!(super::offset_in_dim(10, 0, (1 as Delta)), 1);
-        assert_eq!(super::offset_in_dim(10, 0, (0 as Delta)),    0);
-        assert_eq!(super::offset_in_dim(10, 0, (-1 as Delta)), 9);
-        assert_eq!(super::offset_in_dim(10, 0, (-2 as Delta)), 8);
+        assert_eq!(super::offset_in_dim(10, 0, 2 as Delta), 2);
+        assert_eq!(super::offset_in_dim(10, 0, 1 as Delta), 1);
+        assert_eq!(super::offset_in_dim(10, 0, 0 as Delta), 0);
+        assert_eq!(super::offset_in_dim(10, 0, -1 as Delta), 9);
+        assert_eq!(super::offset_in_dim(10, 0, -2 as Delta), 8);
     }
-
 }

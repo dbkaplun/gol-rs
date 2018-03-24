@@ -1,21 +1,30 @@
 //! The grid module provides `Grid` for working with a "torus world" grid of cells.
 
-use std::vec::Vec;
+use std::fmt::{Debug, Error, Formatter};
 use std::iter::Iterator;
 use std::option::Option;
-use std::fmt::{ Debug, Formatter, Error };
+use std::vec::Vec;
 
 /// Represents a single Cell, alive or dead
 #[derive(PartialEq, Clone, Debug)]
-pub enum Cell { Live, Dead }
+pub enum Cell {
+    Live,
+    Dead,
+}
 
 impl Cell {
     pub fn is_live(&self) -> bool {
-        match self { &Cell::Live => true, _ => false }
+        match *self {
+            Cell::Live => true,
+            _ => false,
+        }
     }
 
     pub fn is_dead(&self) -> bool {
-        match self { &Cell::Dead => true, _ => false }
+        match *self {
+            Cell::Dead => true,
+            _ => false,
+        }
     }
 }
 
@@ -26,7 +35,7 @@ impl Cell {
 pub struct Grid {
     width: usize,
     height: usize,
-    cells: Vec<Cell>
+    cells: Vec<Cell>,
 }
 
 impl Grid {
@@ -37,22 +46,35 @@ impl Grid {
         if count != state.len() {
             panic!("Invalid height and width");
         }
-        Grid { width: width, height: height, cells: state  }
+        Grid {
+            width,
+            height,
+            cells: state,
+        }
     }
 
     /// Constructs a Grid of `width` and `height` using a factory function.
     pub fn from_fn<F>(width: usize, height: usize, mut f: F) -> Grid
-        where F: FnMut(usize, usize) -> Cell
+    where
+        F: FnMut(usize, usize) -> Cell,
     {
         let count = width * height;
         let cells = (0..count).map(|i| f(i % width, i / width)).collect();
-        Grid { width: width, height: height, cells: cells }
+        Grid {
+            width,
+            height,
+            cells,
+        }
     }
 
     /// Constructs a dead grid of `width` and `height`
     pub fn create_dead(width: usize, height: usize) -> Grid {
         let count = width * height;
-        Grid { width: width, height: height, cells: vec![Cell::Dead; count] }
+        Grid {
+            width,
+            height,
+            cells: vec![Cell::Dead; count],
+        }
     }
 
     /// Gets the width of this `Grid`
@@ -72,7 +94,7 @@ impl Grid {
     pub fn cell_at(&self, x: usize, y: usize) -> &Cell {
         match self.cells.get(y * self.width + x) {
             Some(c) => c,
-            None    => panic!("Coordinates ({}, {}) out of range", x, y),
+            None => panic!("Coordinates ({}, {}) out of range", x, y),
         }
     }
 
@@ -81,8 +103,7 @@ impl Grid {
     pub fn set_cell(&mut self, x: usize, y: usize, cell: Cell) {
         if let Some(c) = self.cells.get_mut(y * self.width + x) {
             *c = cell;
-        }
-        else {
+        } else {
             panic!("Coordinates ({}, {}) out of range", x, y)
         }
     }
@@ -90,9 +111,8 @@ impl Grid {
     /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
     /// If any coordinates are outside the grid no action is taken.
     pub fn write_cells(&mut self, x: usize, y: usize, data: &Grid) {
-        for data_y in 0 .. data.height() {
-            for data_x in 0 .. data.width() {
-
+        for data_y in 0..data.height() {
+            for data_x in 0..data.width() {
                 let grid_y = y + data_y;
                 let grid_x = x + data_x;
 
@@ -113,13 +133,15 @@ impl Grid {
 
     /// Returns an iterator over `Cell`s in this `Grid`
     pub fn iter_cells(&self) -> CellIter {
-        CellIter { grid: self, index: 0 }
+        CellIter {
+            grid: self,
+            index: 0,
+        }
     }
 }
 
 impl Debug for Grid {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-
         try!(write!(f, "{}x{} grid:", self.width, self.height));
 
         for row in self.iter_rows() {
@@ -136,7 +158,7 @@ impl Debug for Grid {
 /// Iterator for the rows in a `Grid`
 pub struct RowIter<'a> {
     grid: &'a Grid,
-    row: usize
+    row: usize,
 }
 
 impl<'a> Iterator for RowIter<'a> {
@@ -157,10 +179,10 @@ impl<'a> Iterator for RowIter<'a> {
 /// Iterator for the cells in a `Grid`
 pub struct CellIter<'a> {
     grid: &'a Grid,
-    index: usize
+    index: usize,
 }
 
-impl <'a> Iterator for CellIter<'a> {
+impl<'a> Iterator for CellIter<'a> {
     type Item = (usize, usize, &'a Cell);
 
     fn next(&mut self) -> Option<(usize, usize, &'a Cell)> {
@@ -171,8 +193,7 @@ impl <'a> Iterator for CellIter<'a> {
             let x = index % self.grid.width;
             let y = index / self.grid.width;
             Some((x, y, &self.grid.cells[index]))
-        }
-        else {
+        } else {
             None
         }
     }
@@ -180,14 +201,14 @@ impl <'a> Iterator for CellIter<'a> {
 
 #[cfg(test)]
 pub mod tests {
-
-    use super::{ Grid };
-    use super::Cell::{ Live, Dead };
+    use super::Cell::{Dead, Live};
+    use super::Grid;
 
     pub fn make_square_grid() -> Grid {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             O, O, O,
             O, X, O,
@@ -201,6 +222,7 @@ pub mod tests {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             X, X, X, O,
             X, X, X, O,
@@ -215,6 +237,7 @@ pub mod tests {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             X, X, X,
             X, O, X,
@@ -228,8 +251,9 @@ pub mod tests {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
-        /*      0     1     2     3     4  */
+        /*      0  1  2  3  4 */
         /* 0 */ X, X, O, X, X,
         /* 1 */ X, O, X, O, X,
         /* 2 */ X, X, O, X, X,
@@ -242,6 +266,7 @@ pub mod tests {
         use super::Cell::Dead as X;
         use super::Cell::Live as O;
 
+        #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             X, X, X, X, X, X,
             X, X, X, O, X, X,
@@ -255,15 +280,12 @@ pub mod tests {
 
     #[test]
     fn can_create_grid_from_fn() {
-
-        let grid = Grid::from_fn(2, 2, |x, y| {
-             match (x, y) {
-                (0, 0) => Live,
-                (1, 0) => Dead,
-                (0, 1) => Dead,
-                (1, 1) => Live,
-                 ____  => unreachable!()
-            }
+        let grid = Grid::from_fn(2, 2, |x, y| match (x, y) {
+            (0, 0) => Live,
+            (1, 0) => Dead,
+            (0, 1) => Dead,
+            (1, 1) => Live,
+            ____ => unreachable!(),
         });
 
         assert_eq!(grid.width, 2);
@@ -277,7 +299,6 @@ pub mod tests {
 
     #[test]
     fn can_create_dead_grid() {
-
         let grid = Grid::create_dead(10, 10);
 
         assert_eq!(grid.width, 10);
@@ -292,10 +313,8 @@ pub mod tests {
     #[test]
     #[should_panic(expected = "Invalid height and width")]
     fn creating_grid_with_invalid_raw_state_panics() {
-
         let state = vec![Dead; 99];
 
         Grid::from_raw(10, 10, state);
     }
-
 }

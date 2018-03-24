@@ -8,7 +8,7 @@
 
 extern crate test;
 
+pub mod grid;
 pub mod plaintext;
 pub mod rules;
 pub mod world;
-pub mod grid;
