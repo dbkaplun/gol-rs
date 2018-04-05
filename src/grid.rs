@@ -6,7 +6,7 @@ use std::option::Option;
 use std::vec::Vec;
 
 /// Represents a single Cell, alive or dead
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum Cell {
     Live,
     Dead,
@@ -97,9 +97,9 @@ impl Grid {
 
     /// Returns a reference to the `Cell` at the given coordinates
     #[inline]
-    pub fn cell_at(&self, x: usize, y: usize) -> &Cell {
+    pub fn cell_at(&self, x: usize, y: usize) -> Cell {
         match self.cells.get(y * self.width + x) {
-            Some(c) => c,
+            Some(&c) => c,
             None => panic!("Coordinates ({}, {}) out of range", x, y),
         }
     }
@@ -127,7 +127,7 @@ impl Grid {
                 }
 
                 let cell = data.cell_at(data_x, data_y);
-                self.set_cell(grid_x, grid_y, cell.clone());
+                self.set_cell(grid_x, grid_y, cell);
             }
         }
     }

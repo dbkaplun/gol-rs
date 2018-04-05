@@ -266,11 +266,11 @@ mod tests {
     fn can_get_and_set_cell_in_grid() {
         let mut grid = Grid::create_dead(10, 10);
 
-        assert_eq!(&Dead, grid.cell_at(2, 2));
+        assert_eq!(Dead, grid.cell_at(2, 2));
 
         grid.set_cell(2, 2, Live);
 
-        assert_eq!(&Live, grid.cell_at(2, 2));
+        assert_eq!(Live, grid.cell_at(2, 2));
     }
 
     #[test]
