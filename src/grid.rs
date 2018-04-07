@@ -133,21 +133,17 @@ impl Grid {
         }
     }
 
-    /// Overwrite the cells starting at coords `(x, y)` with the data in the given `Grid`
-    /// If any coordinates are outside the grid no action is taken.
-    pub fn write_cells(&mut self, x: usize, y: usize, data: &Grid) {
-        for data_y in 0..data.height() {
-            for data_x in 0..data.width() {
-                let grid_y = y + data_y;
-                let grid_x = x + data_x;
-
-                if grid_x >= self.width || grid_y >= self.height {
-                    continue;
-                }
-
-                let cell = data.cell_at(data_x, data_y);
-                self.set_cell(grid_x, grid_y, cell);
-            }
+    /// Overwrite the cells starting at `offset` with the data in the given `Grid`.
+    /// Panics if any coordinates are outside the grid.
+    pub fn write_cells(&mut self, data: &Grid, offset: (usize, usize)) {
+        let (sw, _sh) = (self.width(), self.height());
+        let (dw, dh) = (data.width(), data.height());
+        let (ox, oy) = offset;
+        for dy in 0..dh {
+            let sy = oy + dy;
+            let sro = sy * sw;
+            let dro = dy * dw;
+            self.cells[sro + ox..sro + ox + dw].copy_from_slice(&data.cells[dro..dro + dw]);
         }
     }
 

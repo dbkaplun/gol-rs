@@ -289,39 +289,6 @@ mod tests {
         grid.set_cell(10, 10, Live);
     }
 
-    #[test]
-    fn can_set_region_in_world() {
-        use grid::Cell::Dead as X;
-        use grid::Cell::Live as O;
-
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        let new_data = Grid::from_raw(3, 3, vec![
-            O, O, O,
-            O, X, O,
-            O, O, O,
-        ]);
-
-        //write from top left
-        let mut w = make_lonely_world();
-        w.grid_mut().write_cells(0, 0, &new_data);
-
-        //NOTE: Overwrites entire world
-        assert_eq!(&w.curr, &new_data);
-
-        //write from bottom right
-        let mut w = make_lonely_world();
-        w.grid_mut().write_cells(2, 2, &new_data);
-
-        //NOTE: Overwrites bottom corner
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        let expected = &Grid::from_raw(3, 3, vec![
-            X, X, X,
-            X, O, X,
-            X, X, O,
-        ]);
-        assert_eq!(&w.curr, expected);
-    }
-
     // Benchmarks
 
     use test::Bencher;

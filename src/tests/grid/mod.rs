@@ -1,4 +1,5 @@
 pub mod grid;
+pub mod write_cells;
 
 use grid::{Cell::{Dead as X, Live as O}, Grid};
 
