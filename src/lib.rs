@@ -12,3 +12,5 @@ pub mod grid;
 pub mod plaintext;
 pub mod rules;
 pub mod world;
+
+pub use plaintext::PlainText;

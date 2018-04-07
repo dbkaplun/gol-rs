@@ -1,7 +1,9 @@
 //! The grid module provides `Grid` for working with a "torus world" grid of cells.
 
-use std::fmt::{Debug, Display, Error, Formatter};
+use std::error::Error;
+use std::fmt;
 use std::ops::{Index, IndexMut, RangeFull};
+use std::str::FromStr;
 
 /// Represents a single Cell, alive or dead
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -26,8 +28,8 @@ impl Cell {
     }
 }
 
-impl Display for Cell {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "{}", if self.is_live() { "O" } else { "." })
     }
 }
@@ -163,14 +165,14 @@ impl Grid {
     }
 }
 
-impl Debug for Grid {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+impl fmt::Debug for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "!{}x{} grid:\n{}", self.width, self.height, self)
     }
 }
 
-impl Display for Grid {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+impl fmt::Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         for (i, row) in self.iter_rows().enumerate() {
             if i != 0 {
                 try!(write!(f, "\n"));
@@ -180,6 +182,55 @@ impl Display for Grid {
             }
         }
         Ok(())
+    }
+}
+
+impl FromStr for Grid {
+    type Err = Box<Error>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut cells = vec![];
+        let mut width = 0;
+        let mut height = 0;
+
+        let mut row = vec![];
+        for line in s.lines() {
+            let is_first_row = cells.is_empty();
+
+            for c in line.chars() {
+                match c {
+                    'O' => {
+                        row.push(Cell::Live);
+                    }
+                    '.' => {
+                        row.push(Cell::Dead);
+                    }
+                    _ if c.is_whitespace() => {}
+                    _ => {
+                        return Err(format!("found character {}, expected 'O' or '.'", c).into());
+                    }
+                }
+            }
+
+            if row.is_empty() {
+                continue;
+            }
+
+            if is_first_row {
+                width = row.len();
+            } else if width != row.len() {
+                return Err(format!("expected width {}, found {}", width, row.len()).into());
+            }
+
+            cells.append(&mut row); // clears `row`
+            height += 1;
+        }
+
+        Ok(Self {
+            width,
+            height,
+            cells,
+        })
     }
 }
 
@@ -243,14 +294,11 @@ impl<'a> Iterator for CellIter<'a> {
 
 #[cfg(test)]
 pub mod tests {
-    use super::Cell::{Dead, Live};
+    use super::Cell::{Dead as X, Live as O};
     use super::Grid;
     use std::fmt::Write;
 
     pub fn make_square_grid() -> Grid {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             O, O, O,
@@ -262,9 +310,6 @@ pub mod tests {
     }
 
     pub fn make_pipe_grid() -> Grid {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             X, X, X, O,
@@ -277,9 +322,6 @@ pub mod tests {
     }
 
     pub fn make_lonely_grid() -> Grid {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             X, X, X,
@@ -291,9 +333,6 @@ pub mod tests {
     }
 
     pub fn make_oblong_grid() -> Grid {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
         /*      0  1  2  3  4 */
@@ -306,9 +345,6 @@ pub mod tests {
     }
 
     pub fn make_glider_grid() -> Grid {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let state = vec![
             X, X, X, X, X, X,
@@ -323,6 +359,8 @@ pub mod tests {
 
     #[test]
     fn can_create_grid_from_fn() {
+        use super::Cell::{Dead, Live};
+
         let grid = Grid::from_fn(2, 2, |x, y| match (x, y) {
             (0, 0) => Live,
             (1, 0) => Dead,
@@ -342,6 +380,8 @@ pub mod tests {
 
     #[test]
     fn can_create_dead_grid() {
+        use super::Cell::Dead;
+
         let grid = Grid::create_dead(10, 10);
 
         assert_eq!(grid.width, 10);
@@ -370,24 +410,19 @@ pub mod tests {
     #[test]
     #[should_panic(expected = "Invalid height and width")]
     fn creating_grid_with_invalid_raw_state_panics() {
-        let state = vec![Dead; 99];
+        let state = vec![X; 99];
 
         Grid::from_raw(10, 10, state);
     }
 
     #[test]
     fn can_grid_index_rangefull() {
-        use super::Cell::Dead as X;
-
         let grid = Grid::create_dead(2, 3);
         assert_eq!(grid[..], [X, X, X, X, X, X]);
     }
 
     #[test]
     fn can_grid_indexmut_rangefull() {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         let mut grid = Grid::create_dead(3, 3);
         grid[..].copy_from_slice(&[X, O, X, O, X, O, X, O, X]);
         assert_eq!(grid[..][1..=3], [O, X, O]);
@@ -396,8 +431,6 @@ pub mod tests {
     #[test]
     #[should_panic]
     fn can_grid_indexmut_rangefull_small_size_panic() {
-        use super::Cell::Dead as X;
-
         let mut grid = Grid::create_dead(1, 2);
         grid[..].copy_from_slice(&[X]);
     }
@@ -405,10 +438,93 @@ pub mod tests {
     #[test]
     #[should_panic]
     fn can_grid_indexmut_rangefull_large_size_panic() {
-        use super::Cell::Dead as X;
-        use super::Cell::Live as O;
-
         let mut grid = Grid::create_dead(1, 2);
         grid[..].copy_from_slice(&[O, X, O]);
+    }
+
+    #[test]
+    fn test_parse_plaintext() {
+        let tests = vec![
+            (
+                "
+.O
+O.
+",
+                Ok(Grid::from_raw(
+                    2,
+                    2,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, O,
+                        O, X,
+                    ],
+                )),
+            ),
+            (
+                "
+.O
+O.
+",
+                Ok(Grid::from_raw(
+                    2,
+                    2,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, O,
+                        O, X,
+                    ],
+                )),
+            ),
+            (
+                "
+                    .O.
+                    ..O
+                    OOO
+                ",
+                Ok(Grid::from_raw(
+                    3,
+                    3,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, O, X,
+                        X, X, O,
+                        O, O, O,
+                    ],
+                )),
+            ),
+            (".", Ok(Grid::from_raw(1, 1, vec![X]))),
+            (
+                "
+                    ...
+                    OOO
+                    ...
+                ",
+                Ok(Grid::from_raw(
+                    3,
+                    3,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, X, X,
+                        O, O, O,
+                        X, X, X,
+                    ],
+                )),
+            ),
+            (
+                "
+                    ...
+                    OzO
+                    ...
+                ",
+                Err("found character z, expected \'O\' or \'.\'"),
+            ),
+        ];
+        for (input, expected) in tests {
+            let actual: Result<Grid, _> = input.parse();
+            match expected {
+                Ok(expected_grid) => assert_eq!(actual.unwrap(), expected_grid),
+                _ => assert_eq!(actual.unwrap_err().description(), expected.unwrap_err()),
+            }
+        }
     }
 }

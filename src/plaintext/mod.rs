@@ -1,273 +1,184 @@
 //! Module for parsing the [`PlainText`](http://conwaylife.com/wiki/PlainText) Game of Life
 //! file format into a `Grid`.
 
-use grid::{Cell, Grid};
-
-use std::convert;
-use std::fmt;
-use std::io;
-use std::result;
-use std::vec::Vec;
+use grid::Grid;
+use std::error::Error;
+use std::io::{self, BufRead};
+use std::str::FromStr;
 
 /// Struct for the contents of a `PlainText` format Game of Life file.
 ///
-/// ```text
-/// !Name: Example
-/// !
-/// .O.
-/// O.O
-/// .O.
 /// ```
+/// use gol::plaintext::PlainText;
+/// use gol::grid::Cell::{Dead as X, Live as O};
+/// let data: PlainText = "
+///     !Name: Example
+///     .O.
+///     ..O
+///     OOO
+/// ".parse().unwrap();
 ///
+/// assert_eq!(data.header, "Name: Example\n");
+/// assert_eq!(data.grid.cells(), &[
+///     X, O, X,
+///     X, X, O,
+///     O, O, O,
+/// ]);
+/// ```
+#[derive(Debug)]
 pub struct PlainText {
-    pub comment: String,
+    pub header: String,
     pub grid: Grid,
 }
 
-/// Represents any errors which occur during the `PlainText` parsing process
-#[derive(Debug)]
-pub enum ParseError {
-    Io(io::Error),
-    Invalid,
-}
+impl FromStr for PlainText {
+    type Err = Box<Error>;
 
-impl fmt::Display for ParseError {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        use self::ParseError::*;
-        match *self {
-            Io(ref e) => write!(fmt, "I/O Error: {}", e),
-            Invalid => write!(fmt, "Body contained invalid data"),
-        }
-    }
-}
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut header = String::new();
+        let mut grid_str = String::new();
 
-impl convert::From<io::Error> for ParseError {
-    fn from(err: io::Error) -> ParseError {
-        ParseError::Io(err)
-    }
-}
-
-/// Represents the result of a `PlainText` parse operation
-pub type ParseResult = result::Result<PlainText, ParseError>;
-
-fn sub_string_from(source: &str, from: usize) -> Option<&str> {
-    let len = source.len();
-    if len == 0 || len <= from {
-        return None;
-    }
-    Some(&source[from..])
-}
-
-/// Parses the [`PlainText`](http://conwaylife.com/w/index.php?title=Plaintext) format from a buffered stream
-pub fn parse_plaintext<R>(reader: R) -> ParseResult
-where
-    R: io::BufRead,
-{
-    let mut comment = String::new();
-    let mut rows = Vec::new();
-    let mut width = 0;
-
-    for line in reader.lines() {
-        let line = try!(line);
-        let line = line.trim_left();
-        if line.is_empty() {
-            continue;
-        }
-
-        if line.starts_with('!') {
-            if !comment.is_empty() {
-                comment.push_str("\n");
+        let mut cursor = io::Cursor::new(s);
+        loop {
+            let mut line = String::new();
+            cursor.read_line(&mut line)?;
+            if line.is_empty() {
+                break;
             }
-            let line = sub_string_from(line, 1).unwrap_or("").trim();
-            comment.push_str(line);
-        } else {
-            let mut row = Vec::with_capacity(width);
-            for c in line.trim().chars() {
-                match c {
-                    'O' => row.push(Cell::Live),
-                    '.' => row.push(Cell::Dead),
-                    _ => return Err(ParseError::Invalid),
+
+            let line = line.trim_left();
+            if line.starts_with('!') {
+                if !grid_str.is_empty() {
+                    return Err("Header content must come before grid content".into());
                 }
+                header.push_str(&line[1..]);
+            } else {
+                grid_str.push_str(line);
             }
-            if rows.is_empty() {
-                width = row.len();
-            } else if width != row.len() {
-                return Err(ParseError::Invalid);
-            }
-            rows.push(row);
         }
+
+        Ok(Self {
+            header,
+            grid: grid_str.parse()?,
+        })
     }
-
-    let height = rows.len();
-    let cells = rows.into_iter().flat_map(|row| row).collect();
-    let grid = Grid::from_raw(width, height, cells);
-
-    Ok(PlainText { comment, grid })
 }
 
 #[cfg(test)]
 mod tests {
+    use super::PlainText;
     use grid::Cell::{Dead as X, Live as O};
-    use std::io;
 
     #[test]
-    fn sub_string_from_tests() {
-        use super::sub_string_from;
-
-        assert_eq!(Some("a"), sub_string_from("a", 0));
-
-        assert_eq!(None, sub_string_from("", 0));
-        assert_eq!(None, sub_string_from("", 1));
-
-        assert_eq!(Some("abc"), sub_string_from("abc", 0));
-        assert_eq!(Some("bc"), sub_string_from("abc", 1));
-        assert_eq!(None, sub_string_from("abc", 3));
-        assert_eq!(None, sub_string_from("abc", 4));
-    }
-
-    #[test]
-    fn can_parse_simple_plaintext() {
-        const PLAINTEXT: &'static str = "!Name: Tumbler
+    fn test_parse_plaintext() {
+        let tests = vec![
+            (
+                "!Name: Tumbler
 !
-! This is a comment
+! This is a header
 .O
 O.
-";
-
-        let bytes = PLAINTEXT.to_string().into_bytes();
-        let cursor = io::Cursor::new(bytes);
-        let read = io::BufReader::new(cursor);
-
-        let result = super::parse_plaintext(read);
-
-        assert!(result.is_ok(), "Result is not Ok");
-
-        let value = result.unwrap();
-
-        assert_eq!(value.comment, "Name: Tumbler\n\nThis is a comment");
-        assert_eq!(value.grid.width(), 2);
-        assert_eq!(value.grid.height(), 2);
-
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        let expected = vec![
-            X, O,
-            O, X,
-        ];
-
-        for (left, right) in value.grid.iter_cells().zip(expected) {
-            assert_eq!(left.2, &right)
-        }
-    }
-
-    #[test]
-    fn can_parse_simple_plaintext2() {
-        const PLAINTEXT: &'static str = "!Name: Tumbler
+",
+                Ok((
+                    "Name: Tumbler\n\n This is a header\n",
+                    2,
+                    2,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, O,
+                        O, X,
+                    ],
+                )),
+            ),
+            (
+                "!Name: Tumbler
 !
-! This is a comment
+! This is a header
 !
 .O
 O.
-";
-
-        let bytes = PLAINTEXT.to_string().into_bytes();
-        let cursor = io::Cursor::new(bytes);
-        let read = io::BufReader::new(cursor);
-
-        let result = super::parse_plaintext(read);
-
-        assert!(result.is_ok(), "Result is not Ok");
-
-        let value = result.unwrap();
-
-        assert_eq!(value.comment, "Name: Tumbler\n\nThis is a comment\n");
-        assert_eq!(value.grid.width(), 2);
-        assert_eq!(value.grid.height(), 2);
-
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        let expected = vec![
-            X, O,
-            O, X,
+",
+                Ok((
+                    "Name: Tumbler\n\n This is a header\n\n",
+                    2,
+                    2,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, O,
+                        O, X,
+                    ],
+                )),
+            ),
+            (
+                "
+                    !Name: Glider
+                    !
+                    ! This is a header
+                    .O.
+                    ..O
+                    OOO
+                ",
+                Ok((
+                    "Name: Glider\n\n This is a header\n",
+                    3,
+                    3,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, O, X,
+                        X, X, O,
+                        O, O, O,
+                    ],
+                )),
+            ),
+            ("!Name: Tumbler\n.", Ok(("Name: Tumbler\n", 1, 1, vec![X]))),
+            (
+                "
+                    ...
+                    OOO
+                    ...
+                ",
+                Ok((
+                    "",
+                    3,
+                    3,
+                    #[cfg_attr(rustfmt, rustfmt_skip)]
+                    vec![
+                        X, X, X,
+                        O, O, O,
+                        X, X, X,
+                    ],
+                )),
+            ),
+            (
+                "
+                    ...
+                    O.O
+                    !Header in the middle of grid should error
+                    ...
+                ",
+                Err("Header content must come before grid content"),
+            ),
+            (
+                "
+                    ...
+                    OzO
+                    ...
+                ",
+                Err("found character z, expected \'O\' or \'.\'"),
+            ),
         ];
-
-        for (left, right) in value.grid.iter_cells().zip(expected) {
-            assert_eq!(left.2, &right)
+        for (input, expected) in tests {
+            let actual: Result<PlainText, _> = input.parse();
+            match expected {
+                Ok((expected_header, expected_width, expected_height, expected_cells)) => {
+                    let actual = actual.unwrap();
+                    assert_eq!(actual.header, expected_header);
+                    assert_eq!(actual.grid.width(), expected_width);
+                    assert_eq!(actual.grid.height(), expected_height);
+                    assert_eq!(actual.grid.cells(), &expected_cells[..]);
+                }
+                _ => assert_eq!(actual.unwrap_err().description(), expected.unwrap_err()),
+            }
         }
-    }
-
-    #[test]
-    fn can_parse_simple_plaintext_with_leading_whitespace() {
-        const PLAINTEXT: &'static str = "
-            !Name: Glider
-            !
-            ! This is a comment
-            .O.
-            ..O
-            OOO
-        ";
-
-        let bytes = PLAINTEXT.to_string().into_bytes();
-        let cursor = io::Cursor::new(bytes);
-        let read = io::BufReader::new(cursor);
-
-        let result = super::parse_plaintext(read);
-
-        assert!(result.is_ok(), "Result is not Ok");
-
-        let value = result.unwrap();
-
-        assert_eq!(value.comment, "Name: Glider\n\nThis is a comment");
-        assert_eq!(value.grid.width(), 3);
-        assert_eq!(value.grid.height(), 3);
-
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        let expected = vec![
-            X, O, X,
-            X, X, O,
-            O, O, O,
-        ];
-
-        for (left, right) in value.grid.iter_cells().zip(expected) {
-            assert_eq!(left.2, &right)
-        }
-    }
-
-    #[test]
-    fn can_parse_single_cell() {
-        const PLAINTEXT: &'static str = "!Name: Tumbler\n.";
-
-        let bytes = PLAINTEXT.to_string().into_bytes();
-        let cursor = io::Cursor::new(bytes);
-        let read = io::BufReader::new(cursor);
-
-        let result = super::parse_plaintext(read);
-
-        assert!(result.is_ok(), "Result is not Ok");
-
-        let value = result.unwrap();
-
-        assert_eq!(value.comment, "Name: Tumbler");
-        assert_eq!(value.grid.width(), 1);
-        assert_eq!(value.grid.height(), 1);
-        assert_eq!(
-            value
-                .grid
-                .iter_cells()
-                .map(|(_x, _y, &cell)| cell)
-                .collect::<Vec<_>>(),
-            vec![X]
-        );
-    }
-
-    #[test]
-    fn parse_fails_when_invalid_chars_in_body() {
-        const PLAINTEXT: &'static str = "...\nOzO\n...";
-
-        let bytes = PLAINTEXT.to_string().into_bytes();
-        let cursor = io::Cursor::new(bytes);
-        let read = io::BufReader::new(cursor);
-
-        let result = super::parse_plaintext(read);
-
-        assert!(!result.is_ok(), "Result is Ok");
     }
 }
