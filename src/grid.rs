@@ -1,9 +1,7 @@
 //! The grid module provides `Grid` for working with a "torus world" grid of cells.
 
 use std::fmt::{Debug, Display, Error, Formatter};
-use std::iter::Iterator;
-use std::option::Option;
-use std::vec::Vec;
+use std::ops::{Index, IndexMut, RangeFull};
 
 /// Represents a single Cell, alive or dead
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -81,6 +79,12 @@ impl Grid {
             height,
             cells: vec![Cell::Dead; count],
         }
+    }
+
+    /// Gets the size of this `Grid`
+    #[inline]
+    pub fn size(&self) -> usize {
+        self.width() * self.height()
     }
 
     /// Gets the width of this `Grid`
@@ -163,6 +167,21 @@ impl Display for Grid {
             }
         }
         Ok(())
+    }
+}
+
+impl Index<RangeFull> for Grid {
+    type Output = [Cell];
+
+    fn index(&self, _i: RangeFull) -> &Self::Output {
+        &self.cells[0..self.size()]
+    }
+}
+
+impl IndexMut<RangeFull> for Grid {
+    fn index_mut(&mut self, _i: RangeFull) -> &mut Self::Output {
+        let size = self.size();
+        &mut self.cells[0..size]
     }
 }
 
@@ -342,5 +361,23 @@ pub mod tests {
         let state = vec![Dead; 99];
 
         Grid::from_raw(10, 10, state);
+    }
+
+    #[test]
+    fn can_grid_index_rangefull() {
+        use super::Cell::Dead as X;
+
+        let grid = Grid::create_dead(2, 3);
+        assert_eq!(grid[..], [X, X, X, X, X, X]);
+    }
+
+    #[test]
+    fn can_grid_indexmut_rangefull() {
+        use super::Cell::Dead as X;
+        use super::Cell::Live as O;
+
+        let mut grid = Grid::create_dead(3, 3);
+        grid[..].copy_from_slice(&[X, O, X, O, X, O, X, O, X]);
+        assert_eq!(grid[..][1..=3], [O, X, O]);
     }
 }
