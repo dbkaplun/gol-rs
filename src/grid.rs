@@ -2,8 +2,10 @@
 
 use std::error::Error;
 use std::fmt;
-use std::ops::{Index, IndexMut, RangeFull};
+use std::ops::{Index, IndexMut, Range, RangeFull};
 use std::str::FromStr;
+
+use gridview::GridView;
 
 /// Represents a single Cell, alive or dead
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -33,6 +35,8 @@ impl fmt::Display for Cell {
         write!(f, "{}", if self.is_live() { "O" } else { "." })
     }
 }
+
+pub type Coord = (usize, usize);
 
 #[derive(PartialEq, Eq, Hash, Clone)]
 /// An addressable grid of `Cell`s
@@ -134,7 +138,7 @@ impl Grid {
     }
 
     /// Shrinks grid to given size. Panics if size is larger than current grid.
-    pub fn shrink(&mut self, size: (usize, usize), offset: (usize, usize)) {
+    pub fn shrink(&mut self, size: Coord, offset: Coord) {
         let (old_w, old_h) = (self.width(), self.height());
         let (new_w, new_h) = size;
         let (off_x, off_y) = offset;
@@ -160,7 +164,7 @@ impl Grid {
 
     /// Overwrite the cells starting at `offset` with the data in the given `Grid`.
     /// Panics if any coordinates are outside the grid.
-    pub fn write_cells(&mut self, data: &Grid, offset: (usize, usize)) {
+    pub fn write_cells(&mut self, data: &Grid, offset: Coord) {
         let (sw, _sh) = (self.width(), self.height());
         let (dw, dh) = (data.width(), data.height());
         let (ox, oy) = offset;
@@ -170,6 +174,11 @@ impl Grid {
             let dro = dy * dw;
             self.cells[sro + ox..sro + ox + dw].copy_from_slice(&data.cells[dro..dro + dw]);
         }
+    }
+
+    /// Returns a view over a range of cells in this `Grid`
+    pub fn range(&self, range: Range<Coord>) -> GridView {
+        GridView { grid: self, range }
     }
 
     /// Returns an iterator over rows in this `Grid`
