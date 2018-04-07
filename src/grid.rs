@@ -99,6 +99,19 @@ impl Grid {
         self.height
     }
 
+    /// Returns a contiguous slice containing the cells of this `Grid`
+    #[inline]
+    pub fn cells(&self) -> &[Cell] {
+        &self.cells[0..self.size()]
+    }
+
+    /// Returns a contiguous slice containing the cells of this `Grid`
+    #[inline]
+    pub fn cells_mut(&mut self) -> &mut [Cell] {
+        let size = self.size();
+        &mut self.cells[0..size]
+    }
+
     /// Returns a reference to the `Cell` at the given coordinates
     #[inline]
     pub fn cell_at(&self, x: usize, y: usize) -> Cell {
@@ -174,14 +187,13 @@ impl Index<RangeFull> for Grid {
     type Output = [Cell];
 
     fn index(&self, _i: RangeFull) -> &Self::Output {
-        &self.cells[0..self.size()]
+        self.cells()
     }
 }
 
 impl IndexMut<RangeFull> for Grid {
     fn index_mut(&mut self, _i: RangeFull) -> &mut Self::Output {
-        let size = self.size();
-        &mut self.cells[0..size]
+        self.cells_mut()
     }
 }
 
@@ -379,5 +391,24 @@ pub mod tests {
         let mut grid = Grid::create_dead(3, 3);
         grid[..].copy_from_slice(&[X, O, X, O, X, O, X, O, X]);
         assert_eq!(grid[..][1..=3], [O, X, O]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn can_grid_indexmut_rangefull_small_size_panic() {
+        use super::Cell::Dead as X;
+
+        let mut grid = Grid::create_dead(1, 2);
+        grid[..].copy_from_slice(&[X]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn can_grid_indexmut_rangefull_large_size_panic() {
+        use super::Cell::Dead as X;
+        use super::Cell::Live as O;
+
+        let mut grid = Grid::create_dead(1, 2);
+        grid[..].copy_from_slice(&[O, X, O]);
     }
 }
