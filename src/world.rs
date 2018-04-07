@@ -115,8 +115,8 @@ impl World {
 mod tests {
     use grid::Cell::{Dead, Live};
     use grid::Grid;
-    use grid::tests as grid_test;
     use rules;
+    use tests::grid as grid_test;
     use world::World;
 
     fn make_square_world() -> World {

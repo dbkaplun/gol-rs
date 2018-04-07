@@ -132,7 +132,7 @@ fn offset_in_dim(dimension_size: usize, current_index: usize, delta: Delta) -> u
 mod tests {
     use super::{terminal_neighbours, torus_neighbours};
 
-    use grid::tests::{make_lonely_grid, make_oblong_grid, make_pipe_grid, make_square_grid};
+    use tests::grid::{make_lonely_grid, make_oblong_grid, make_pipe_grid, make_square_grid};
 
     #[test]
     fn can_count_torus_neighbours_on_square_grid() {

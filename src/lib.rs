@@ -13,4 +13,7 @@ pub mod plaintext;
 pub mod rules;
 pub mod world;
 
+#[cfg(test)]
+pub mod tests;
+
 pub use plaintext::PlainText;
