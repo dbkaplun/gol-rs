@@ -133,6 +133,31 @@ impl Grid {
         }
     }
 
+    /// Shrinks grid to given size. Panics if size is larger than current grid.
+    pub fn shrink(&mut self, size: (usize, usize), offset: (usize, usize)) {
+        let (old_w, old_h) = (self.width(), self.height());
+        let (new_w, new_h) = size;
+        let (off_x, off_y) = offset;
+
+        if old_w < new_w + off_x || old_h < new_h + off_y {
+            panic!("new size plus offset must be at most current size");
+        }
+
+        let mut i = 0;
+        self.cells.retain(|_| {
+            let old_col = i % old_w;
+            let old_row = i / old_w;
+
+            let is_col_ok = off_x <= old_col && old_col < off_x + new_w;
+            let is_row_ok = off_y <= old_row && old_row < off_y + new_h;
+
+            i += 1;
+            is_row_ok && is_col_ok
+        });
+        self.width = new_w;
+        self.height = new_h;
+    }
+
     /// Overwrite the cells starting at `offset` with the data in the given `Grid`.
     /// Panics if any coordinates are outside the grid.
     pub fn write_cells(&mut self, data: &Grid, offset: (usize, usize)) {
