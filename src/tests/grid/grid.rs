@@ -39,7 +39,7 @@ fn can_create_dead_grid() {
 fn can_debug_grid() {
     let mut output = String::new();
     write!(&mut output, "{:?}", make_oblong_grid()).unwrap();
-    assert_eq!(output, "!5x3 grid:\n..O..\n.O.O.\n..O..");
+    assert_eq!(output, "!5x3 Grid:\n..O..\n.O.O.\n..O..");
 }
 
 #[test]

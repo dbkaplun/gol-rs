@@ -1,7 +1,7 @@
 use grid::{Cell, Coord, Grid};
+use std::fmt;
 use std::ops::Range;
 
-#[derive(Debug)]
 pub struct GridView<'g> {
     pub(crate) grid: &'g Grid,
     pub(crate) range: Range<Coord>,
@@ -27,6 +27,25 @@ impl<'a> GridView<'a> {
                     None
                 }
             })
+    }
+}
+
+impl<'a> fmt::Debug for GridView<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(f, "!GridView: {:?}\n{}", self.range, self)
+    }
+}
+
+impl<'a> fmt::Display for GridView<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        let w = self.range.end.0 - self.range.start.0;
+        for (i, cell) in self.cells().enumerate() {
+            if i % w == 0 && i != 0 {
+                writeln!(f)?;
+            }
+            write!(f, "{}", cell)?;
+        }
+        Ok(())
     }
 }
 

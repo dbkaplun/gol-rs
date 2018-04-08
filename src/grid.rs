@@ -197,21 +197,13 @@ impl Grid {
 
 impl fmt::Debug for Grid {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        write!(f, "!{}x{} grid:\n{}", self.width, self.height, self)
+        write!(f, "!{}x{} Grid:\n{}", self.width, self.height, self)
     }
 }
 
 impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        for (i, row) in self.iter_rows().enumerate() {
-            if i != 0 {
-                try!(write!(f, "\n"));
-            }
-            for cell in row {
-                try!(write!(f, "{}", cell));
-            }
-        }
-        Ok(())
+        self.range((0, 0)..(self.width(), self.height())).fmt(f)
     }
 }
 
